@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>Maths Warriors - Online Multiplayer</title>
-
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
         body { 
@@ -48,17 +50,6 @@
         .die-wrapper { display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: 0.3s; padding: 10px; border-radius: 12px; border: 3px solid transparent; }
         .die-img { width: 75px; height: 75px; filter: drop-shadow(0px 6px 6px rgba(0,0,0,0.8)); }
         .captured { animation: die-fall 0.6s forwards; pointer-events: none; }
-        .penalty-chip {
-            width: 25px;
-            height: 25px;
-            background: #e74c3c;
-            border: 2px solid #ffffff;
-            border-radius: 50%;
-            display: inline-block;
-            margin-left: 10px;
-            box-shadow: 0 0 10px rgba(231, 76, 60, 0.8);
-            vertical-align: middle;
-        }
         @keyframes die-fall { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(200px); opacity: 0; } }
 
         .die-wrapper.selected { border-color: #f1c40f; background: rgba(241, 196, 15, 0.1); transform: translateY(-8px); }
@@ -121,7 +112,6 @@
     </div>
 
     <script type="module">
-        import confetti from "https://cdn.skypack.dev/canvas-confetti";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
         import { getDatabase, ref, set, onValue, update, get } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js";
     
@@ -143,7 +133,6 @@
     
         let p1 = { dice: [] }, p2 = { dice: [] }, turn = 1, myPlayerNum = 0, currentRoomName = "", isAnimating = false;
         let selectedOwn = [], selectedOpp = null;
-        let penaltyChipOwner = 0;
     
         const setStatus = (txt) => document.getElementById('msg-display').innerText = txt;
 
@@ -194,40 +183,18 @@
             if(myPlayerNum === 1) {
                 const sides = [4, 6, 8, 10, 12, 20];
                 const roll = (s) => Math.floor(Math.random() * s) + 1;
-                
-                // Create dice and sort by value (ascending), then by sides if values are equal
-                let p1Dice = sides.map(s => ({ s, v: roll(s) })).sort((a,b) => a.v - b.v || a.s - b.s);
-                let p2Dice = sides.map(s => ({ s, v: roll(s) })).sort((a,b) => a.v - b.v || a.s - b.s);
-    
-                // Determine who starts (Lower relative value)
-                let starter = 1;
-                for(let i = 0; i < 6; i++) {
-                    if(p1Dice[i].v < p2Dice[i].v) {
-                        starter = 1; 
-                        break;
-                    }
-                    if(p2Dice[i].v < p1Dice[i].v) {
-                        starter = 2; 
-                        break;
-                    }
-                    // If all 6 dice are identical, coin flip
-                    if(i === 5) starter = Math.random() > 0.5 ? 1 : 2;
-                }
-    
                 set(roomRef, {
-                    p1Dice: p1Dice,
-                    p2Dice: p2Dice,
-                    turn: starter,
-                    penaltyChipOwner: starter, // The person who starts gets the penalty chip
-                    lastCap: null,
-                    winner: null,
-                    count: 1
+                    p1Dice: sides.map(s => ({ s, v: roll(s) })),
+                    p2Dice: sides.map(s => ({ s, v: roll(s) })),
+                    turn: 1, lastCap: null, winner: null, count: 1
                 });
+            } else {
+                update(roomRef, { count: 2 });
+            }
     
             onValue(roomRef, (snap) => {
                 const data = snap.val();
                 if(!data) return;
-                penaltyChipOwner = data.penaltyChipOwner;
                 if(data.winner) return showGameOver(data.winner);
 
                 if (!data.count || data.count < 2) {
@@ -248,17 +215,8 @@
                 }
             });
         };
+    
         function render() {
-            // Clear existing chips
-            document.querySelectorAll('.penalty-chip').forEach(el => el.remove());
-            // Add chip to the owner's header
-            const ownerArea = document.querySelector(`#p${penaltyChipOwner}-area h3`);
-            if(ownerArea) {
-                const chip = document.createElement('span');
-                chip.className = 'penalty-chip';
-                chip.title = "Penalty Chip: Must win final capture with a HIGHER value";
-                ownerArea.appendChild(chip);
-            }
             drawDice('p1-dice', p1.dice, 1);
             drawDice('p2-dice', p2.dice, 2);
             const isMyTurn = (turn === myPlayerNum);
@@ -268,7 +226,7 @@
             document.getElementById('mind-btn').disabled = !isMyTurn;
             document.getElementById('strength-btn').disabled = !isMyTurn;
             document.getElementById('pass-btn').disabled = !isMyTurn;
-        }    
+        }
 
         function drawDice(id, list, owner) {
             const container = document.getElementById(id);
