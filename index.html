@@ -16,8 +16,32 @@
 
         .board { display: flex; justify-content: center; gap: 20px; margin-top: 10px; }
         .player-side { 
-            border: 2px solid #444; padding: 15px; border-radius: 12px; 
-            width: 420px; min-height: 380px; background: #1e1e1e; position: relative;
+            position: relative; /* This keeps the chip inside the box */
+            border: 2px solid #444; 
+            padding: 15px; 
+            border-radius: 12px; 
+            width: 420px; 
+            min-height: 380px; 
+            background: #1e1e1e; 
+        }
+        
+        .penalty-chip {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 35px;
+            height: 35px;
+            background: #f1c40f; /* Yellow */
+            border: 2px solid #000;
+            border-radius: 50%;
+            color: black;
+            font-weight: bold;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
+            z-index: 10;
         }
         
         #p1-area.active { border-color: #3498db; box-shadow: 0 0 20px rgba(52, 152, 219, 0.4); }
@@ -77,11 +101,11 @@
     <div id="main-game" class="hidden">
         <div class="board">
             <div id="p1-area" class="player-side">
-                <h3 style="color:#3498db;">PLAYER 1</h3>
+                <div class="penalty-chip">!</div> <h3 style="color:#3498db;">PLAYER 1</h3>
                 <div id="p1-dice" class="dice-grid"></div>
             </div>
             <div id="p2-area" class="player-side">
-                <h3 style="color:#27ae60;">PLAYER 2</h3>
+                <div class="penalty-chip">!</div> <h3 style="color:#27ae60;">PLAYER 2</h3>
                 <div id="p2-dice" class="dice-grid"></div>
             </div>
         </div>
@@ -178,24 +202,18 @@
             drawDice('p2-dice', p2.dice, 2);
             
             const isMyTurn = (turn === myPlayerNum);
-            document.getElementById('p1-area').className = turn === 1 ? 'player-side active' : 'player-side';
-            document.getElementById('p2-area').className = turn === 2 ? 'player-side active' : 'player-side';
             
-            // --- PENALTY CHIP LOGIC ---
-            // If you select 3 or more dice, show a penalty chip on your side
-            const myArea = document.getElementById(`p${myPlayerNum}-area`);
-            const existingChip = myArea.querySelector('.penalty-chip');
-            if (selectedOwn.length > 2) {
-                if (!existingChip) {
-                    const chip = document.createElement('div');
-                    chip.className = 'penalty-chip';
-                    chip.innerText = '!';
-                    myArea.appendChild(chip);
-                }
-            } else if (existingChip) {
-                existingChip.remove();
-            }
-    
+            // Highlight active player
+            document.getElementById('p1-area').classList.toggle('active', turn === 1);
+            document.getElementById('p2-area').classList.toggle('active', turn === 2);
+            
+            setStatus(isMyTurn ? "YOUR TURN!" : "Waiting for opponent...");
+            
+            document.getElementById('mind-btn').disabled = !isMyTurn;
+            document.getElementById('strength-btn').disabled = !isMyTurn;
+            document.getElementById('pass-btn').disabled = !isMyTurn;
+        }
+            
             setStatus(isMyTurn ? "YOUR TURN!" : "Waiting for opponent...");
             document.getElementById('mind-btn').disabled = !isMyTurn;
             document.getElementById('strength-btn').disabled = !isMyTurn;
