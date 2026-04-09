@@ -8,24 +8,60 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
-        body { 
-            background-image: url('https://t3.ftcdn.net/jpg/04/83/90/18/360_F_483901821_46VsNR67uJC3xIKQN4aaxR6GtAZhx9G8.jpg');
-            background-size: cover;
-            background-position: center;
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            text-align: center;
+            overflow-x: hidden;
+            color: white;
+            /* The New Animated Gradient */
+            background: linear-gradient(315deg, rgba(101,0,94,1) 3%, rgba(60,132,206,1) 38%, rgba(48,238,226,1) 68%, rgba(255,25,25,1) 98%);
+            background-size: 400% 400%;
             background-attachment: fixed;
-            background-color: #0f0f1a;
-            color: white; 
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
-            text-align: center; 
-            margin: 0; padding: 20px; overflow-x: hidden; 
+            animation: gradient 15s ease infinite;
         }
-
-        body::before {
-            content: "";
+        
+        /* New Gradient Animation */
+        @keyframes gradient {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 100% 100%; }
+            100% { background-position: 0% 0%; }
+        }
+        
+        /* The Waves */
+        .wave {
+            background: rgb(255 255 255 / 15%); /* Reduced opacity slightly for better game visibility */
+            border-radius: 1000% 1000% 0 0;
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.4);
-            z-index: -1;
+            width: 200%;
+            height: 12em;
+            animation: wave 10s -3s linear infinite;
+            transform: translate3d(0, 0, 0);
+            opacity: 0.8;
+            bottom: 0;
+            left: 0;
+            z-index: -1; /* Behind game content */
+        }
+        
+        .wave:nth-of-type(2) {
+            bottom: -1.25em;
+            animation: wave 18s linear reverse infinite;
+            opacity: 0.5;
+        }
+        
+        .wave:nth-of-type(3) {
+            bottom: -2.5em;
+            animation: wave 20s -1s reverse infinite;
+            opacity: 0.3;
+        }
+        
+        @keyframes wave {
+            2% { transform: translateX(1); }
+            25% { transform: translateX(-25%); }
+            50% { transform: translateX(-50%); }
+            75% { transform: translateX(-25%); }
+            100% { transform: translateX(1); }
         }
 
         #msg-display { font-size: 1.5em; height: 40px; color: #f1c40f; margin-bottom: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px rgba(0,0,0,0.8); }
@@ -66,7 +102,11 @@
     </style>
 </head>
 <body>
-
+    <div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+    </div>
     <h1>MATHS WARRIORS ONLINE</h1>
     <div id="msg-display">Welcome! Practice the great game of Math Warriors here!</div>
 
