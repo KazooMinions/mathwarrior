@@ -53,6 +53,14 @@
         }
         .win-text { font-size: 5em; font-weight: bold; color: #f1c40f; text-shadow: 0 0 20px #f1c40f; animation: pulse 1s infinite; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        /* Penalty Chip Styling */
+        .penalty-chip {
+            position: absolute; top: 10px; right: 10px;
+            width: 30px; height: 30px; background: #f1c40f;
+            border: 2px solid #000; border-radius: 50%;
+            color: black; font-weight: bold; line-height: 30px;
+            box-shadow: 0 0 10px #f1c40f;
+        }
     </style>
 </head>
 <body>
@@ -132,17 +140,10 @@
             onValue(roomPath, (snap) => {
                 const data = snap.val();
                 if(!data) return;
-    
-                // Check for game over
-                if(data.winner) {
-                    showGameOver(data.winner);
-                    return;
-                }
-    
+                if(data.winner) { showGameOver(data.winner); return; }
                 if(data.lastCap && data.lastCap.by !== myPlayerNum && !isAnimating) {
                     showEnemyCaptureAnim(data.lastCap.targetIdx);
                 }
-    
                 p1.dice = data.p1Dice || [];
                 p2.dice = data.p2Dice || [];
                 turn = data.turn;
@@ -154,66 +155,47 @@
         };
     
         function showGameOver(winnerId) {
+            if(document.getElementById('win-overlay')) return;
             const isWin = winnerId === myPlayerNum;
             const overlay = document.createElement('div');
-            overlay.id = 'game-over-overlay';
+            overlay.id = 'win-overlay';
             overlay.innerHTML = `
-                <div class="${isWin ? 'win-msg' : 'lose-msg'}">${isWin ? 'VICTORY' : 'DEFEATED'}</div>
-                <p>${isWin ? 'You conquered the math realm!' : 'Better luck next time, warrior.'}</p>
-                <button class="btn-atk" onclick="location.reload()">Return to Menu</button>
+                <div class="win-text">${isWin ? 'VICTORY' : 'DEFEATED'}</div>
+                <p style="font-size: 1.5em; margin-bottom: 20px;">${isWin ? 'The Math Realm is yours!' : 'The numbers were not in your favor.'}</p>
+                <button class="btn-atk" onclick="location.reload()">Back to Home</button>
             `;
             document.body.appendChild(overlay);
         }
     
         window.surrender = function() {
-            if(!confirm("Surrender and return to menu?")) return;
+            if(!confirm("Give up this battle?")) return;
             const oppId = myPlayerNum === 1 ? 2 : 1;
             update(ref(db, 'rooms/' + currentRoomName), { winner: oppId });
         };
     
-        function executeCapture() {
-            isAnimating = true;
-            setStatus("CAPTURE SUCCESSFUL!");
-            const defSide = (myPlayerNum === 1 ? 2 : 1);
-            const target = document.getElementById(`die-${defSide}-${selectedOpp}`);
-            if(target) target.classList.add('captured');
-    
-            setTimeout(() => {
-                let atk = (myPlayerNum === 1 ? p1 : p2);
-                let def = (myPlayerNum === 1 ? p2 : p1);
-                def.dice.splice(selectedOpp, 1);
-    
-                // Check if this was the last die
-                if(def.dice.length === 0) {
-                    update(ref(db, 'rooms/' + currentRoomName), { winner: myPlayerNum });
-                    return;
-                }
-    
-                selectedOwn.forEach(idx => {
-                    atk.dice[idx].v = Math.floor(Math.random() * atk.dice[idx].s) + 1;
-                });
-    
-                update(ref(db, 'rooms/' + currentRoomName), {
-                    p1Dice: p1.dice, p2Dice: p2.dice,
-                    turn: (myPlayerNum === 1 ? 2 : 1),
-                    lastCap: { by: myPlayerNum, targetIdx: selectedOpp }
-                });
-    
-                selectedOwn = []; selectedOpp = null;
-                isAnimating = false;
-                render();
-            }, 700);
-        }
-    
-        // --- KEEP YOUR EXISTING RENDER, DRAWDICE, DOSTRENGTH, DOMIND, NEXTTURN, SHOWENEMYCAPTUREANIM FUNCTIONS BELOW ---
-        // (Ensure they are inside this <script type="module"> block)
-    
         function render() {
             drawDice('p1-dice', p1.dice, 1);
             drawDice('p2-dice', p2.dice, 2);
+            
             const isMyTurn = (turn === myPlayerNum);
             document.getElementById('p1-area').className = turn === 1 ? 'player-side active' : 'player-side';
             document.getElementById('p2-area').className = turn === 2 ? 'player-side active' : 'player-side';
+            
+            // --- PENALTY CHIP LOGIC ---
+            // If you select 3 or more dice, show a penalty chip on your side
+            const myArea = document.getElementById(`p${myPlayerNum}-area`);
+            const existingChip = myArea.querySelector('.penalty-chip');
+            if (selectedOwn.length > 2) {
+                if (!existingChip) {
+                    const chip = document.createElement('div');
+                    chip.className = 'penalty-chip';
+                    chip.innerText = '!';
+                    myArea.appendChild(chip);
+                }
+            } else if (existingChip) {
+                existingChip.remove();
+            }
+    
             setStatus(isMyTurn ? "YOUR TURN!" : "Waiting for opponent...");
             document.getElementById('mind-btn').disabled = !isMyTurn;
             document.getElementById('strength-btn').disabled = !isMyTurn;
@@ -261,6 +243,36 @@
                 else setStatus("Math doesn't match!");
             } catch(e) { setStatus("Invalid Formula!"); }
         };
+    
+        function executeCapture() {
+            isAnimating = true;
+            setStatus("CAPTURE SUCCESSFUL!");
+            const defSide = (myPlayerNum === 1 ? 2 : 1);
+            const target = document.getElementById(`die-${defSide}-${selectedOpp}`);
+            if(target) target.classList.add('captured');
+            selectedOwn.forEach(idx => document.getElementById(`die-${myPlayerNum}-${idx}`).classList.add('rolling'));
+    
+            setTimeout(() => {
+                let atk = (myPlayerNum === 1 ? p1 : p2);
+                let def = (myPlayerNum === 1 ? p2 : p1);
+                def.dice.splice(selectedOpp, 1);
+                if(def.dice.length === 0) {
+                    update(ref(db, 'rooms/' + currentRoomName), { winner: myPlayerNum });
+                    return;
+                }
+                selectedOwn.forEach(idx => {
+                    atk.dice[idx].v = Math.floor(Math.random() * atk.dice[idx].s) + 1;
+                });
+                update(ref(db, 'rooms/' + currentRoomName), {
+                    p1Dice: p1.dice, p2Dice: p2.dice,
+                    turn: (myPlayerNum === 1 ? 2 : 1),
+                    lastCap: { by: myPlayerNum, targetIdx: selectedOpp }
+                });
+                selectedOwn = []; selectedOpp = null;
+                isAnimating = false;
+                render();
+            }, 700);
+        }
     
         function showEnemyCaptureAnim(idx) {
             isAnimating = true;
