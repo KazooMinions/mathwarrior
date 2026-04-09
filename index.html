@@ -7,7 +7,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
     <style>
-        body { background: #121212; color: white; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; padding: 20px; overflow-x: hidden; }
+        body { background: #121212; color: white; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; padding: 20px; }
         #msg-display { font-size: 1.5em; height: 40px; color: #f1c40f; margin-bottom: 10px; font-weight: bold; }
 
         #lobby { padding: 40px; background: #1e1e1e; border: 2px solid #444; border-radius: 20px; display: inline-block; margin-top: 50px; }
@@ -24,6 +24,7 @@
             background: #1e1e1e; 
         }
         
+        /* The Permanent Penalty Chip */
         .penalty-chip {
             position: absolute;
             top: 10px;
@@ -35,12 +36,12 @@
             border-radius: 50%;
             color: black;
             font-weight: bold;
-            font-size: 22px;
+            font-size: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
             box-shadow: 0 0 10px rgba(241, 196, 15, 0.6);
-            z-index: 10;
+            z-index: 100;
         }
         
         #p1-area.active { border-color: #3498db; box-shadow: 0 0 20px rgba(52, 152, 219, 0.4); }
@@ -48,42 +49,34 @@
         
         .dice-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-top: 15px; }
         .die-wrapper { display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: 0.3s; padding: 10px; border-radius: 12px; border: 3px solid transparent; }
-        .die-img { width: 75px; height: 75px; object-fit: contain; margin-bottom: 5px; filter: drop-shadow(0px 6px 6px rgba(0,0,0,0.8)); }
+        .die-img { width: 70px; height: 70px; object-fit: contain; }
 
-        .captured { animation: die-fall 0.6s forwards; pointer-events: none; }
-        @keyframes die-fall { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(200px) rotate(45deg); opacity: 0; } }
-        .rolling { animation: die-roll 0.4s infinite; }
-        @keyframes die-roll { 0% { transform: rotate(0deg); } 25% { transform: rotate(10deg) scale(1.1); } 75% { transform: rotate(-10deg) scale(0.9); } 100% { transform: rotate(0deg); } }
-
-        .die-wrapper.selected { border-color: #f1c40f; background: rgba(241, 196, 15, 0.1); transform: translateY(-8px); }
+        .die-wrapper.selected { border-color: #f1c40f; background: rgba(241, 196, 15, 0.1); }
         .die-wrapper.target { border-color: #e74c3c; box-shadow: 0 0 15px #e74c3c; }
-        .die-val { font-size: 1.8em; font-weight: bold; text-shadow: 2px 2px 4px black; }
+        .die-val { font-size: 1.5em; font-weight: bold; }
 
-        .controls { margin-top: 30px; padding: 25px; background: #222; border-radius: 15px; display: inline-block; }
-        input { background: #333; border: 1px solid #555; color: #0f0; padding: 12px; font-size: 1.2em; width: 280px; border-radius: 8px; text-align: center; }
-        button { padding: 12px 24px; font-size: 16px; cursor: pointer; border: none; border-radius: 8px; margin: 5px; font-weight: bold; transition: 0.2s; }
-        .btn-atk { background: #e67e22; color: white; border-bottom: 4px solid #d35400; }
+        .controls { margin-top: 30px; padding: 20px; background: #222; border-radius: 15px; display: inline-block; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; border: none; border-radius: 8px; margin: 5px; font-weight: bold; }
+        .btn-atk { background: #e67e22; color: white; }
         .btn-pass { background: #7f8c8d; color: white; }
         .hidden { display: none !important; }
 
         #win-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9); display: flex; flex-direction: column;
-            align-items: center; justify-content: center; z-index: 100;
+            align-items: center; justify-content: center; z-index: 1000;
         }
-        .win-text { font-size: 5em; font-weight: bold; color: #f1c40f; text-shadow: 0 0 20px #f1c40f; animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
 
-    <h1>MATHS WARRIORS ONLINE</h1>
-    <div id="msg-display">Connect to a room to start battle!</div>
+    <h1>MATHS WARRIORS</h1>
+    <div id="msg-display">Connect to a room to start!</div>
 
     <div id="lobby">
         <input type="text" id="room-input" class="room-input" placeholder="Room Name..."><br>
-        <button class="btn-atk" onclick="joinRoom(1)" style="background:#3498db;">Host as Player 1</button>
-        <button class="btn-atk" onclick="joinRoom(2)" style="background:#27ae60;">Join as Player 2</button>
+        <button onclick="joinRoom(1)" style="background:#3498db; color:white;">Host as Player 1</button>
+        <button onclick="joinRoom(2)" style="background:#27ae60; color:white;">Join as Player 2</button>
     </div>
 
     <div id="main-game" class="hidden">
@@ -101,11 +94,10 @@
         </div>
 
         <div class="controls">
-            <input type="text" id="formula" placeholder="e.g. 5+2">
+            <input type="text" id="formula" placeholder="Math formula...">
             <button id="mind-btn" class="btn-atk" onclick="doMind()">Mind Attack</button>
             <button id="strength-btn" class="btn-atk" onclick="doStrength()">Strength Attack</button>
             <button id="pass-btn" class="btn-pass" onclick="nextTurn()">Pass Turn</button>
-            <button id="surrender-btn" class="btn-pass" style="background:#c0392b;" onclick="surrender()">Surrender</button>
         </div>
     </div>
 
@@ -129,14 +121,14 @@
         const P1_IMGS = { 4: "d4_blue.png", 6: "d6_blue.png", 8: "d8_blue.png", 10: "d10_blue.png", 12: "d12_blue.png", 20: "d20_blue.png" };
         const P2_IMGS = { 4: "d4_green.png", 6: "d6_green.png", 8: "d8_green.png", 10: "d10_green.png", 12: "d12_green.png", 20: "d20_green.png" };
     
-        let p1 = { dice: [] }, p2 = { dice: [] }, turn = 1, myPlayerNum = 0, currentRoomName = "", isAnimating = false;
+        let p1 = { dice: [] }, p2 = { dice: [] }, turn = 1, myPlayerNum = 0, currentRoomName = "";
         let selectedOwn = [], selectedOpp = null;
     
         const setStatus = (txt) => document.getElementById('msg-display').innerText = txt;
     
         window.joinRoom = function(pNum) {
             const rName = document.getElementById('room-input').value;
-            if(!rName) return alert("Enter a room name!");
+            if(!rName) return alert("Enter room name!");
             myPlayerNum = pNum;
             currentRoomName = rName;
             const roomPath = ref(db, 'rooms/' + rName);
@@ -147,54 +139,31 @@
                 set(roomPath, {
                     p1Dice: sides.map(s => ({ s, v: roll(s) })),
                     p2Dice: sides.map(s => ({ s, v: roll(s) })),
-                    turn: 1, lastCap: null, winner: null
+                    turn: 1, winner: null
                 });
             }
     
             onValue(roomPath, (snap) => {
                 const data = snap.val();
                 if(!data) return;
-                if(data.winner) { showGameOver(data.winner); return; }
-                if(data.lastCap && data.lastCap.by !== myPlayerNum && !isAnimating) {
-                    showEnemyCaptureAnim(data.lastCap.targetIdx);
-                }
+                if(data.winner) return showGameOver(data.winner);
                 p1.dice = data.p1Dice || [];
                 p2.dice = data.p2Dice || [];
                 turn = data.turn;
-                if(!isAnimating) render();
+                render();
             });
     
             document.getElementById('lobby').classList.add('hidden');
             document.getElementById('main-game').classList.remove('hidden');
         };
     
-        function showGameOver(winnerId) {
-            if(document.getElementById('win-overlay')) return;
-            const isWin = winnerId === myPlayerNum;
-            const overlay = document.createElement('div');
-            overlay.id = 'win-overlay';
-            overlay.innerHTML = `
-                <div class="win-text">${isWin ? 'VICTORY' : 'DEFEATED'}</div>
-                <button class="btn-atk" onclick="location.reload()">Return to Menu</button>
-            `;
-            document.body.appendChild(overlay);
-        }
-    
-        window.surrender = function() {
-            if(!confirm("Surrender?")) return;
-            const oppId = myPlayerNum === 1 ? 2 : 1;
-            update(ref(db, 'rooms/' + currentRoomName), { winner: oppId });
-        };
-    
         function render() {
             drawDice('p1-dice', p1.dice, 1);
             drawDice('p2-dice', p2.dice, 2);
-            
             const isMyTurn = (turn === myPlayerNum);
             document.getElementById('p1-area').classList.toggle('active', turn === 1);
             document.getElementById('p2-area').classList.toggle('active', turn === 2);
-            
-            setStatus(isMyTurn ? "YOUR TURN!" : "Waiting for opponent...");
+            setStatus(isMyTurn ? "YOUR TURN!" : "Opponent's Turn...");
             document.getElementById('mind-btn').disabled = !isMyTurn;
             document.getElementById('strength-btn').disabled = !isMyTurn;
             document.getElementById('pass-btn').disabled = !isMyTurn;
@@ -207,15 +176,15 @@
             list.forEach((d, i) => {
                 const wrapper = document.createElement('div');
                 wrapper.className = 'die-wrapper';
-                wrapper.id = `die-${owner}-${i}`;
                 if(owner === myPlayerNum && selectedOwn.includes(i)) wrapper.classList.add('selected');
                 if(owner !== myPlayerNum && selectedOpp === i) wrapper.classList.add('target');
                 wrapper.innerHTML = `<img src="${imgSet[d.s]}" class="die-img"><div class="die-val">${d.v}</div>`;
                 wrapper.onclick = () => {
-                    if(owner === myPlayerNum && turn === myPlayerNum) {
+                    if(turn !== myPlayerNum) return;
+                    if(owner === myPlayerNum) {
                         if(selectedOwn.includes(i)) selectedOwn = selectedOwn.filter(x => x !== i);
                         else selectedOwn.push(i);
-                    } else if (owner !== myPlayerNum && turn === myPlayerNum) {
+                    } else {
                         selectedOpp = i;
                     }
                     render();
@@ -235,57 +204,42 @@
         window.doMind = function() {
             if(selectedOwn.length < 2 || selectedOpp === null) return setStatus("Select 2+ dice and 1 target!");
             const formula = document.getElementById('formula').value;
-            const defender = (myPlayerNum === 1 ? p2 : p1);
+            const defenderDice = (myPlayerNum === 1 ? p2 : p1).dice;
             try {
-                if(eval(formula) === defender.dice[selectedOpp].v) executeCapture();
+                if(eval(formula) === defenderDice[selectedOpp].v) executeCapture();
                 else setStatus("Math doesn't match!");
             } catch(e) { setStatus("Invalid Formula!"); }
         };
     
         function executeCapture() {
-            isAnimating = true;
-            setStatus("CAPTURE SUCCESSFUL!");
-            const defSide = (myPlayerNum === 1 ? 2 : 1);
-            const target = document.getElementById(`die-${defSide}-${selectedOpp}`);
-            if(target) target.classList.add('captured');
+            let atk = (myPlayerNum === 1 ? p1 : p2);
+            let def = (myPlayerNum === 1 ? p2 : p1);
+            def.dice.splice(selectedOpp, 1);
+            if(def.dice.length === 0) {
+                update(ref(db, 'rooms/' + currentRoomName), { winner: myPlayerNum });
+                return;
+            }
             selectedOwn.forEach(idx => {
-                const el = document.getElementById(`die-${myPlayerNum}-${idx}`);
-                if(el) el.classList.add('rolling');
+                atk.dice[idx].v = Math.floor(Math.random() * atk.dice[idx].s) + 1;
             });
-    
-            setTimeout(() => {
-                let atk = (myPlayerNum === 1 ? p1 : p2);
-                let def = (myPlayerNum === 1 ? p2 : p1);
-                def.dice.splice(selectedOpp, 1);
-                if(def.dice.length === 0) {
-                    update(ref(db, 'rooms/' + currentRoomName), { winner: myPlayerNum });
-                    return;
-                }
-                selectedOwn.forEach(idx => {
-                    atk.dice[idx].v = Math.floor(Math.random() * atk.dice[idx].s) + 1;
-                });
-                update(ref(db, 'rooms/' + currentRoomName), {
-                    p1Dice: p1.dice, p2Dice: p2.dice,
-                    turn: (myPlayerNum === 1 ? 2 : 1),
-                    lastCap: { by: myPlayerNum, targetIdx: selectedOpp }
-                });
-                selectedOwn = []; selectedOpp = null;
-                isAnimating = false;
-                render();
-            }, 700);
-        }
-    
-        function showEnemyCaptureAnim(idx) {
-            isAnimating = true;
-            const target = document.getElementById(`die-${myPlayerNum}-${idx}`);
-            if(target) target.classList.add('captured');
-            setTimeout(() => { isAnimating = false; render(); }, 700);
+            update(ref(db, 'rooms/' + currentRoomName), {
+                p1Dice: p1.dice, p2Dice: p2.dice,
+                turn: (myPlayerNum === 1 ? 2 : 1)
+            });
+            selectedOwn = []; selectedOpp = null;
+            document.getElementById('formula').value = "";
         }
     
         window.nextTurn = function() {
-            if(turn !== myPlayerNum) return;
-            update(ref(db, 'rooms/' + currentRoomName), { turn: (myPlayerNum === 1 ? 2 : 1), lastCap: null });
+            update(ref(db, 'rooms/' + currentRoomName), { turn: (myPlayerNum === 1 ? 2 : 1) });
         };
+
+        function showGameOver(winId) {
+            const overlay = document.createElement('div');
+            overlay.id = 'win-overlay';
+            overlay.innerHTML = `<h1 style="font-size:4em; color:#f1c40f;">${winId === myPlayerNum ? 'VICTORY' : 'DEFEAT'}</h1><button onclick="location.reload()">Back</button>`;
+            document.body.appendChild(overlay);
+        }
     </script>
 </body>
 </html>
