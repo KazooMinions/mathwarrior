@@ -10,7 +10,6 @@
         body { background: #121212; color: white; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; padding: 20px; overflow-x: hidden; }
         #msg-display { font-size: 1.5em; height: 40px; color: #f1c40f; margin-bottom: 10px; font-weight: bold; }
 
-        /* Lobby Styling */
         #lobby { padding: 40px; background: #1e1e1e; border: 2px solid #444; border-radius: 20px; display: inline-block; margin-top: 50px; }
         .room-input { background: #333; border: 1px solid #555; color: #0f0; padding: 12px; font-size: 1.2em; width: 250px; border-radius: 8px; margin-bottom: 20px; }
 
@@ -25,7 +24,6 @@
             background: #1e1e1e; 
         }
         
-        /* Permanent Penalty Chip */
         .penalty-chip {
             position: absolute;
             top: 10px;
@@ -52,7 +50,6 @@
         .die-wrapper { display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: 0.3s; padding: 10px; border-radius: 12px; border: 3px solid transparent; }
         .die-img { width: 75px; height: 75px; object-fit: contain; margin-bottom: 5px; filter: drop-shadow(0px 6px 6px rgba(0,0,0,0.8)); }
 
-        /* Animations */
         .captured { animation: die-fall 0.6s forwards; pointer-events: none; }
         @keyframes die-fall { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(200px) rotate(45deg); opacity: 0; } }
         .rolling { animation: die-roll 0.4s infinite; }
@@ -178,14 +175,13 @@
             overlay.id = 'win-overlay';
             overlay.innerHTML = `
                 <div class="win-text">${isWin ? 'VICTORY' : 'DEFEATED'}</div>
-                <p style="font-size: 1.5em; color: white;">${isWin ? 'You conquered the realm!' : 'Better luck next time.'}</p>
                 <button class="btn-atk" onclick="location.reload()">Return to Menu</button>
             `;
             document.body.appendChild(overlay);
         }
     
         window.surrender = function() {
-            if(!confirm("Surrender and return to menu?")) return;
+            if(!confirm("Surrender?")) return;
             const oppId = myPlayerNum === 1 ? 2 : 1;
             update(ref(db, 'rooms/' + currentRoomName), { winner: oppId });
         };
