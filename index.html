@@ -173,6 +173,8 @@
                 return alert("Room not found! Ensure Player 1 has created it.");
             }
 
+            document.getElementById('waiting-room-display').innerText = rName;
+            
             myPlayerNum = pNum;
             currentRoomName = rName;
             document.getElementById('room-id-display').innerText = rName;
