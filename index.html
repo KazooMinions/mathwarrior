@@ -43,6 +43,16 @@
         .btn-atk { background: #e67e22; color: white; border-bottom: 4px solid #d35400; }
         .btn-pass { background: #7f8c8d; color: white; }
         .hidden { display: none !important; }
+
+        /* Victory stuff lol */
+        /* Victory Overlay */
+        #win-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 100;
+        }
+        .win-text { font-size: 5em; font-weight: bold; color: #f1c40f; text-shadow: 0 0 20px #f1c40f; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
@@ -73,15 +83,14 @@
             <button id="mind-btn" class="btn-atk" onclick="doMind()">Mind Attack</button>
             <button id="strength-btn" class="btn-atk" onclick="doStrength()">Strength Attack</button>
             <button id="pass-btn" class="btn-pass" onclick="nextTurn()">Pass Turn</button>
+            <button id="surrender-btn" class="btn-pass" style="background:#c0392b;" onclick="surrender()">Surrender</button>
         </div>
     </div>
 
     <script type="module">
-        // 1. Import Firebase functions
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
         import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js";
     
-        // 2. Your specific configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDHeIncfWQLiZb0Mu7WVB8Jj4GZniZJOg",
             authDomain: "math-warrior-7d2a7.firebaseapp.com",
@@ -92,30 +101,20 @@
             appId: "1:1019102123933:web:a231ff25b25f8a75280174"
         };
     
-        // 3. Initialize
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
     
-        // --- GAME VARIABLES ---
         const P1_IMGS = { 4: "d4_blue.png", 6: "d6_blue.png", 8: "d8_blue.png", 10: "d10_blue.png", 12: "d12_blue.png", 20: "d20_blue.png" };
         const P2_IMGS = { 4: "d4_green.png", 6: "d6_green.png", 8: "d8_green.png", 10: "d10_green.png", 12: "d12_green.png", 20: "d20_green.png" };
     
-        let p1 = { dice: [] };
-        let p2 = { dice: [] };
-        let turn = 1;
-        let myPlayerNum = 0;
-        let currentRoomName = "";
-        let selectedOwn = []; 
-        let selectedOpp = null;
-        let isAnimating = false;
+        let p1 = { dice: [] }, p2 = { dice: [] }, turn = 1, myPlayerNum = 0, currentRoomName = "", isAnimating = false;
+        let selectedOwn = [], selectedOpp = null;
     
         const setStatus = (txt) => document.getElementById('msg-display').innerText = txt;
     
-        // --- ONLINE CONNECTION ---
         window.joinRoom = function(pNum) {
             const rName = document.getElementById('room-input').value;
             if(!rName) return alert("Enter a room name!");
-            
             myPlayerNum = pNum;
             currentRoomName = rName;
             const roomPath = ref(db, 'rooms/' + rName);
@@ -126,15 +125,20 @@
                 set(roomPath, {
                     p1Dice: sides.map(s => ({ s, v: roll(s) })),
                     p2Dice: sides.map(s => ({ s, v: roll(s) })),
-                    turn: 1,
-                    lastCap: null
+                    turn: 1, lastCap: null, winner: null
                 });
             }
     
             onValue(roomPath, (snap) => {
                 const data = snap.val();
                 if(!data) return;
-                
+    
+                // Check for game over
+                if(data.winner) {
+                    showGameOver(data.winner);
+                    return;
+                }
+    
                 if(data.lastCap && data.lastCap.by !== myPlayerNum && !isAnimating) {
                     showEnemyCaptureAnim(data.lastCap.targetIdx);
                 }
@@ -149,14 +153,67 @@
             document.getElementById('main-game').classList.remove('hidden');
         };
     
+        function showGameOver(winnerId) {
+            const isWin = winnerId === myPlayerNum;
+            const overlay = document.createElement('div');
+            overlay.id = 'game-over-overlay';
+            overlay.innerHTML = `
+                <div class="${isWin ? 'win-msg' : 'lose-msg'}">${isWin ? 'VICTORY' : 'DEFEATED'}</div>
+                <p>${isWin ? 'You conquered the math realm!' : 'Better luck next time, warrior.'}</p>
+                <button class="btn-atk" onclick="location.reload()">Return to Menu</button>
+            `;
+            document.body.appendChild(overlay);
+        }
+    
+        window.surrender = function() {
+            if(!confirm("Surrender and return to menu?")) return;
+            const oppId = myPlayerNum === 1 ? 2 : 1;
+            update(ref(db, 'rooms/' + currentRoomName), { winner: oppId });
+        };
+    
+        function executeCapture() {
+            isAnimating = true;
+            setStatus("CAPTURE SUCCESSFUL!");
+            const defSide = (myPlayerNum === 1 ? 2 : 1);
+            const target = document.getElementById(`die-${defSide}-${selectedOpp}`);
+            if(target) target.classList.add('captured');
+    
+            setTimeout(() => {
+                let atk = (myPlayerNum === 1 ? p1 : p2);
+                let def = (myPlayerNum === 1 ? p2 : p1);
+                def.dice.splice(selectedOpp, 1);
+    
+                // Check if this was the last die
+                if(def.dice.length === 0) {
+                    update(ref(db, 'rooms/' + currentRoomName), { winner: myPlayerNum });
+                    return;
+                }
+    
+                selectedOwn.forEach(idx => {
+                    atk.dice[idx].v = Math.floor(Math.random() * atk.dice[idx].s) + 1;
+                });
+    
+                update(ref(db, 'rooms/' + currentRoomName), {
+                    p1Dice: p1.dice, p2Dice: p2.dice,
+                    turn: (myPlayerNum === 1 ? 2 : 1),
+                    lastCap: { by: myPlayerNum, targetIdx: selectedOpp }
+                });
+    
+                selectedOwn = []; selectedOpp = null;
+                isAnimating = false;
+                render();
+            }, 700);
+        }
+    
+        // --- KEEP YOUR EXISTING RENDER, DRAWDICE, DOSTRENGTH, DOMIND, NEXTTURN, SHOWENEMYCAPTUREANIM FUNCTIONS BELOW ---
+        // (Ensure they are inside this <script type="module"> block)
+    
         function render() {
             drawDice('p1-dice', p1.dice, 1);
             drawDice('p2-dice', p2.dice, 2);
-            
             const isMyTurn = (turn === myPlayerNum);
             document.getElementById('p1-area').className = turn === 1 ? 'player-side active' : 'player-side';
             document.getElementById('p2-area').className = turn === 2 ? 'player-side active' : 'player-side';
-            
             setStatus(isMyTurn ? "YOUR TURN!" : "Waiting for opponent...");
             document.getElementById('mind-btn').disabled = !isMyTurn;
             document.getElementById('strength-btn').disabled = !isMyTurn;
@@ -167,14 +224,12 @@
             const container = document.getElementById(id);
             container.innerHTML = '';
             const imgSet = (owner === 1) ? P1_IMGS : P2_IMGS;
-    
             list.forEach((d, i) => {
                 const wrapper = document.createElement('div');
                 wrapper.className = 'die-wrapper';
                 wrapper.id = `die-${owner}-${i}`;
                 if(owner === myPlayerNum && selectedOwn.includes(i)) wrapper.classList.add('selected');
                 if(owner !== myPlayerNum && selectedOpp === i) wrapper.classList.add('target');
-                
                 wrapper.innerHTML = `<img src="${imgSet[d.s]}" class="die-img"><div class="die-val">${d.v}</div>`;
                 wrapper.onclick = () => {
                     if(owner === myPlayerNum && turn === myPlayerNum) {
@@ -189,7 +244,6 @@
             });
         }
     
-        // --- GAME ACTIONS ---
         window.doStrength = function() {
             if(selectedOwn.length !== 1 || selectedOpp === null) return setStatus("Select 1 die and 1 target!");
             let atk = (myPlayerNum === 1 ? p1 : p2).dice[selectedOwn[0]];
@@ -207,35 +261,6 @@
                 else setStatus("Math doesn't match!");
             } catch(e) { setStatus("Invalid Formula!"); }
         };
-    
-        function executeCapture() {
-            isAnimating = true;
-            setStatus("CAPTURE SUCCESSFUL!");
-            const defSide = (myPlayerNum === 1 ? 2 : 1);
-            document.getElementById(`die-${defSide}-${selectedOpp}`).classList.add('captured');
-            selectedOwn.forEach(idx => document.getElementById(`die-${myPlayerNum}-${idx}`).classList.add('rolling'));
-    
-            setTimeout(() => {
-                let atk = (myPlayerNum === 1 ? p1 : p2);
-                let def = (myPlayerNum === 1 ? p2 : p1);
-                
-                def.dice.splice(selectedOpp, 1);
-                selectedOwn.forEach(idx => {
-                    atk.dice[idx].v = Math.floor(Math.random() * atk.dice[idx].s) + 1;
-                });
-    
-                update(ref(db, 'rooms/' + currentRoomName), {
-                    p1Dice: p1.dice,
-                    p2Dice: p2.dice,
-                    turn: (myPlayerNum === 1 ? 2 : 1),
-                    lastCap: { by: myPlayerNum, targetIdx: selectedOpp }
-                });
-    
-                selectedOwn = []; selectedOpp = null;
-                isAnimating = false;
-                render();
-            }, 700);
-        }
     
         function showEnemyCaptureAnim(idx) {
             isAnimating = true;
