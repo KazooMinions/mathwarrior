@@ -5,7 +5,8 @@
     <title>Maths Warriors - Online Multiplayer</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
     <style>
         body { 
             background-image: url('https://t3.ftcdn.net/jpg/04/83/90/18/360_F_483901821_46VsNR67uJC3xIKQN4aaxR6GtAZhx9G8.jpg');
@@ -300,11 +301,32 @@
         };
 
         function showGameOver(winnerId) {
+            if (document.getElementById('game-over-overlay')) return;
             const isWin = winnerId === myPlayerNum;
             const overlay = document.createElement('div');
             overlay.id = 'game-over-overlay';
-            overlay.innerHTML = `<h1>${isWin ? 'VICTORY' : 'DEFEATED'}</h1><button onclick="location.reload()">NEW BATTLE</button>`;
+            
+            // Style the text based on win/loss
+            const titleStyle = isWin 
+                ? "color: #f1c40f; text-shadow: 0 0 20px #f1c40f;" 
+                : "color: #e74c3c; text-shadow: 0 0 20px #e74c3c;";
+        
+            overlay.innerHTML = `
+                <h1 style="font-size: 5em; ${titleStyle}">${isWin ? 'VICTORY' : 'DEFEATED'}</h1>
+                <button onclick="location.reload()" style="padding: 15px 30px; font-size: 1.2em; cursor: pointer;">NEW BATTLE</button>
+            `;
+            
             document.body.appendChild(overlay);
+        
+            // Trigger Confetti if winner
+            if (isWin) {
+                confetti({
+                    particleCount: 150,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: ['#f1c40f', '#ffffff', '#3498db']
+                });
+            }
         }
 
         function showEnemyCaptureAnim(idx) {
