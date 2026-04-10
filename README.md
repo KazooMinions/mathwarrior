@@ -1,4 +1,4 @@
-# mathwarrior
+# Math Warrior Game Online!
 
 + Rule Book
     + Game Overview
