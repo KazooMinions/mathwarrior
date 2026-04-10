@@ -40,21 +40,26 @@
             FOR MORE INFORMATION/CLEARANCE.
             Maths Warriors Tutorial Video
 
-    + Strategies Guide
+    + Strategies Guide:
+    
           + General Strategies
           Dice Management is Key: Since you only have one of each die, be mindful of which ones you use and lose. Losing your higher-value dice early may hurt your chances later.
           Balance Risk and Reward: Strength Attacks are safer but less creative. Mind Attacks carry more risk (you might fail) but can be more efficient and impressive if executed well.
+          
           + Strength Attack Strategies
           Use High Dice on High Targets: Save your D20, D12, and D10 for high-value captures. Don't waste them on low-value targets unless necessary.
           Bait with Lower Dice: Leave a medium-value die exposed to tempt your opponent into attacking it, then retaliate using a better-positioned die.
           Reroll Advantage: Since attacking dice are rerolled and kept in play, sometimes it’s worth attacking just to get a better number on a die.
+          
           + Mind Attack Strategies
           Maximize Low Dice: Smaller dice are perfect for Mind Attacks—they’re less valuable in Strength Attacks and can combine easily.
           Retain Your Highest Dice: Don’t use D20 or D12 in Mind Attacks unless absolutely necessary. They're better for brute-force Strength Attacks.
           Practice Mental Math Patterns: Quick recognition of sums like 6 + 8 = 14 or 12 ÷ 2 = 6 gives you an edge in faster decision-making.
+          
           + Turn Order & Penalty Chip Strategies
           Use the First Turn Wisely: As the starting player, you’re at a disadvantage for the last capture (Final Capture Rule). Consider playing more aggressively to gain the upper hand early.
           Plan the Final Capture: Always try to keep one strong die for the endgame. If you started, you must win with a higher die—don’t waste your last big number too early.
+          
           + Advanced Tactics
           Dice Tracking: Mentally keep track of what dice your opponent has left. Knowing they’ve lost their D20, for example, lets you plan safer Strength Attacks.
           Mind Games: Bluffing is possible. Appear to target one die but suddenly switch to another using a Mind Attack.
