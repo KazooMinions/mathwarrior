@@ -10,7 +10,18 @@
     <style>
         body {
             margin: 0; padding: 20px; font-family: 'Segoe UI', sans-serif; text-align: center;
-            color: white; background: #1a1a1a; background-attachment: fixed;
+            color: white; 
+            /* RESTORED RGB GRADIENT */
+            background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #000000);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            background-attachment: fixed;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
         #msg-display { font-size: 1.4em; height: 40px; color: #f1c40f; font-weight: bold; }
         #battle-log { 
@@ -250,12 +261,49 @@
 
         window.doMind = function() {
             if(selectedOwn.length < 2 || selectedOpp === null) return setStatus("Select 2+ dice & 1 target!");
-            const formula = document.getElementById('formula').value;
+            
+            const formulaString = document.getElementById('formula').value;
             const defVal = (myPlayerNum === 1 ? p2Dice : p1Dice)[selectedOpp].v;
+            
+            // 1. Get the values of the dice you actually clicked on the screen
+            let availableValues = selectedOwn.map(idx => (myPlayerNum === 1 ? p1Dice : p2Dice)[idx].v);
+            
+            // 2. Extract all numbers from your typed formula (e.g., "(4*3)-2" -> [4, 3, 2])
+            const usedNumbers = formulaString.match(/\d+/g)?.map(Number) || [];
+        
+            // 3. LOGIC CHECK: Are the numbers in the formula actually the ones you selected?
+            // We create a copy of availableValues to "check off" numbers as we find them
+            let tempAvailable = [...availableValues];
+            let isValidSelection = true;
+        
+            if (usedNumbers.length === 0) return setStatus("Type a formula using numbers!");
+        
+            for (let num of usedNumbers) {
+                let index = tempAvailable.indexOf(num);
+                if (index > -1) {
+                    tempAvailable.splice(index, 1); // Remove it so it can't be used twice unless you have two dice of that value
+                } else {
+                    isValidSelection = false;
+                    break;
+                }
+            }
+        
+            // 4. Also check if you selected dice but didn't use them in the formula
+            if (tempAvailable.length > 0 || !isValidSelection) {
+                return setStatus("Formula numbers must match SELECTED dice exactly!");
+            }
+        
+            // 5. If numbers match, run the math evaluation
             try {
-                if(eval(formula) === defVal) executeCap(`${myName} used Mind Attack! ${formula} = ${defVal}`);
-                else setStatus("Math result is wrong!");
-            } catch(e) { setStatus("Invalid Formula!"); }
+                // We use a slightly safer way to eval here
+                if(eval(formulaString) === defVal) {
+                    executeCap(`${myName} used Mind Attack! ${formulaString} = ${defVal}`);
+                } else {
+                    setStatus(`Math result is ${eval(formulaString)}, but target is ${defVal}!`);
+                }
+            } catch(e) {
+                setStatus("Invalid Formula Syntax!");
+            }
         };
 
         window.executeCap = function(logMsg, atkDie, defDie) {
