@@ -33,7 +33,18 @@
             display: inline-block; width: 30px; height: 30px; background: #e74c3c;
             border-radius: 50%; border: 2px solid #fff; margin-left: 10px; vertical-align: middle;
         }
-
+        /* The Reroll Animation */
+        .rolling {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+            filter: brightness(1.5) drop-shadow(0 0 15px #f1c40f);
+        }
+        
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0) rotate(-5deg); }
+            20%, 80% { transform: translate3d(2px, 0, 0) rotate(5deg); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0) rotate(-10deg); }
+            40%, 60% { transform: translate3d(4px, 0, 0) rotate(10deg); }
+        }
         #lobby-container { display: flex; flex-direction: column; align-items: center; gap: 20px; margin-top: 30px; }
         #lobby { padding: 30px; background: #222; border: 2px solid #444; border-radius: 20px; width: 350px; }
         .browser-box { width: 400px; background: #111; border: 1px solid #555; border-radius: 15px; padding: 15px; }
@@ -310,33 +321,70 @@
             isAnimating = true;
             const defSide = (myPlayerNum === 1 ? 2 : 1);
             const targetEl = document.getElementById(`die-${defSide}-${selectedOpp}`);
+            
+            // 1. Start Capture Animation (Target falls away)
             if(targetEl) targetEl.classList.add('captured');
-
+        
             setTimeout(() => {
                 let myD = (myPlayerNum === 1 ? p1Dice : p2Dice);
                 let opD = (myPlayerNum === 1 ? p2Dice : p1Dice);
                 
+                // Penalty Chip Check
                 if(opD.length === 1 && penChipOwner === myPlayerNum) {
                     if(atkDie && atkDie.v <= defDie.v) {
-                        update(ref(db, 'rooms/' + currentRoomName), { winner: (myPlayerNum === 1 ? 2 : 1), log: `Penalty Chip Fail: Final capture was not high enough!` });
+                        update(ref(db, 'rooms/' + currentRoomName), { 
+                            winner: (myPlayerNum === 1 ? 2 : 1), 
+                            log: `Penalty Chip Violation: ${myName} failed the final blow!` 
+                        });
                         return;
                     }
                 }
-
-                opD.splice(selectedOpp, 1);
-                if(opD.length === 0) return update(ref(db, 'rooms/' + currentRoomName), { winner: myPlayerNum, log: logMsg });
-                
-                selectedOwn.forEach(idx => { myD[idx].v = Math.floor(Math.random() * myD[idx].s) + 1; });
-                
-                update(ref(db, 'rooms/' + currentRoomName), {
-                    p1D: sortDice(p1Dice), p2D: sortDice(p2Dice),
-                    turn: (myPlayerNum === 1 ? 2 : 1),
-                    p1S: [], p2S: [], p1T: null, p2T: null,
-                    log: logMsg, lastCap: { by: myPlayerNum, t: selectedOpp }
+        
+                // 2. Visual "Shake" for the dice being rerolled
+                selectedOwn.forEach(idx => {
+                    const el = document.getElementById(`die-${myPlayerNum}-${idx}`);
+                    if(el) el.classList.add('rolling');
                 });
-                selectedOwn = []; selectedOpp = null; isAnimating = false;
-            }, 700);
-        }
+        
+                // Small delay so the player can see the "rolling" shake before the numbers flip
+                setTimeout(() => {
+                    opD.splice(selectedOpp, 1);
+                    
+                    if(opD.length === 0) {
+                        update(ref(db, 'rooms/' + currentRoomName), { winner: myPlayerNum, log: logMsg });
+                        return;
+                    }
+                    
+                    // Reroll values
+                    selectedOwn.forEach(idx => { 
+                        myD[idx].v = Math.floor(Math.random() * myD[idx].s) + 1; 
+                    });
+        
+                    // Re-sort dice after reroll
+                    const newP1 = myPlayerNum === 1 ? sortDice(myD) : opD;
+                    const newP2 = myPlayerNum === 2 ? sortDice(myD) : opD;
+        
+                    // Reset UI states
+                    selectedOwn = []; 
+                    selectedOpp = null;
+                    document.getElementById('formula').value = "";
+        
+                    // 3. Update Firebase
+                    update(ref(db, 'rooms/' + currentRoomName), {
+                        p1D: newP1,
+                        p2D: newP2,
+                        turn: (myPlayerNum === 1 ? 2 : 1),
+                        p1S: [], p2S: [], p1T: null, p2T: null,
+                        log: logMsg,
+                        lastCap: null 
+                    }).then(() => {
+                        isAnimating = false;
+                        render(); // This will clear the .rolling classes because it re-draws the dice
+                    });
+                }, 500); // Shake duration
+        
+            }, 600); // Capture animation duration
+        };
 
         window.nextTurn = function() {
             update(ref(db, 'rooms/' + currentRoomName), { 
