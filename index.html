@@ -182,6 +182,27 @@
 
         .die-wrapper:hover { transform: translateY(-3px); }
 
+        /* ONLY spin the image inside a wrapper that has the .rolling class */
+        .die-wrapper.rolling .die-img {
+            animation: 
+                play-x 0.4s steps(8) infinite,
+                play-y 2.4s steps(6) infinite !important;
+        }
+        
+        /* ONLY apply the fall/disappear animation to the wrapper being captured */
+        .die-wrapper.captured {
+            animation: die-fall 0.55s forwards;
+            pointer-events: none; /* Prevent clicking it while it's falling */
+            z-index: 100; /* Keep it above others while falling */
+        }
+        
+        /* Ensure other dice stay static */
+        .die-wrapper:not(.rolling) .die-img {
+            animation: none;
+            left: 0;
+            top: 0;
+        }
+
         /* SELECTION OUTLINES (Fixed Issue 2) */
         .die-wrapper.selected .die-scene { outline: 3px solid var(--gold); box-shadow: 0 0 15px var(--gold); border-radius: 8px; }
         .die-wrapper.in-equation .die-scene { outline: 3px solid var(--blue); box-shadow: 0 0 15px var(--blue); border-radius: 8px; }
@@ -265,6 +286,12 @@
         @keyframes play-y {
             from { top: 0; }
             to { top: -486px; }
+        }
+
+        @keyframes die-fall {
+            0% { transform: scale(1) translateY(0); opacity: 1; }
+            20% { transform: scale(1.1) translateY(-10px); } /* Slight pop up */
+            100% { transform: scale(0.5) translateY(150px) rotate(45deg); opacity: 0; }
         }
         
         /* Adjust the scene to fit the scaled frames */
@@ -667,7 +694,7 @@ function drawDice(id, list, owner) {
         const imgPath = `polyhedral_dice/d${d.s}_${imgType}.png`;
         
         wrapper.innerHTML = `
-            <div class="die-scene ${isAnimating ? 'rolling' : ''}">
+            <div class="die-scene ${isAnimating ? 'rolling' : ''} ${d.captured ? 'captured' : ''}">
                 <img src="polyhedral_dice/d${d.s}_blank.png" class="die-blank">
                 
                 <img src="${imgPath}" class="die-img">
