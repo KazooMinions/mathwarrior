@@ -208,33 +208,26 @@
         .rolling .die-img {
             animation: play-sprite 0.6s steps(15) infinite; 
         }
-        
-        /* Center the number on top of the die */
-        .die-val {
-            position: absolute;
-            z-index: 10; /* Put it in front of the images */
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 1.4em;
-            font-weight: 900;
-            color: white;
-            text-shadow: 0 0 5px black;
-            pointer-events: none;
-        }
 
         /* Stack the layers: Blank on bottom, Image on top */
         .die-blank {
             position: absolute;
             width: 64px;
             height: 64px;
-            z-index: 1;
+            z-index: 1; /* Back */
         }
-        
         .die-img {
             position: absolute;
-            z-index: 2;
             height: 64px;
+            z-index: 2; /* Middle */
+        }
+        .die-val {
+            position: absolute;
+            z-index: 10; /* Front */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
         }
         
         /* Ensure the hires version is centered and not "offset" like the sheet */
@@ -651,7 +644,9 @@ function drawDice(id, list, owner) {
         if(owner !== myPlayerNum && enemySelections.includes(i)) wrapper.classList.add('enemy-selected');
         if(owner === myPlayerNum && enemyTarget === i) wrapper.classList.add('target');
 
-        // Choose between sheet (rolling) or hires (static)
+
+        
+        // Replace the old wrapper.innerHTML block with this:
         const imgType = isAnimating ? 'sheet' : 'hires';
         const imgPath = `polyhedral_dice/d${d.s}_${imgType}.png`;
         
@@ -664,7 +659,7 @@ function drawDice(id, list, owner) {
                 <div class="die-val">${d.v}</div>
             </div>
             <div class="die-sides">d${d.s}</div>`;
-
+                
         wrapper.onclick = () => {
             if(turn !== myPlayerNum) return;
             if(mindMode) {
