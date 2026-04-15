@@ -208,6 +208,20 @@
         .rolling .die-img {
             animation: play-sprite 0.6s steps(15) infinite; 
         }
+        
+        /* Center the number on top of the die */
+        .die-val {
+            position: absolute;
+            z-index: 10; /* Put it in front of the images */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.4em;
+            font-weight: 900;
+            color: white;
+            text-shadow: 0 0 5px black;
+            pointer-events: none;
+        }
 
         /* Stack the layers: Blank on bottom, Image on top */
         .die-blank {
@@ -621,79 +635,57 @@ function render() {
 function drawDice(id, list, owner) {
     const container = document.getElementById(id);
     container.innerHTML = '';
-
-    // Indices of dice used in equation (only for my own)
+    
     const inEqIndices = new Set(
-        equationItems.filter(e=>e.type==='die').map(e=>e.dieIdx)
+        equationItems.filter(e => e.type === 'die').map(e => e.dieIdx)
     );
 
     list.forEach((d, i) => {
         const wrapper = document.createElement('div');
         wrapper.className = 'die-wrapper';
-        wrapper.id = `die-${owner}-${i}`;
-        wrapper.dataset.owner = owner;
-        wrapper.dataset.idx = i;
+        
+        // Selection/Targeting classes [cite: 155, 156]
+        if(owner === myPlayerNum && inEqIndices.has(i)) wrapper.classList.add('in-equation');
+        else if(owner === myPlayerNum && selectedOwn.includes(i)) wrapper.classList.add('selected');
+        if(owner !== myPlayerNum && selectedOpp === i) wrapper.classList.add('target');
+        if(owner !== myPlayerNum && enemySelections.includes(i)) wrapper.classList.add('enemy-selected');
+        if(owner === myPlayerNum && enemyTarget === i) wrapper.classList.add('target');
 
-        if(owner===myPlayerNum && inEqIndices.has(i)) wrapper.classList.add('in-equation');
-        else if(owner===myPlayerNum && selectedOwn.includes(i)) wrapper.classList.add('selected');
-        if(owner!==myPlayerNum && selectedOpp===i) wrapper.classList.add('target');
-        if(owner!==myPlayerNum && enemySelections.includes(i)) wrapper.classList.add('enemy-selected');
-        if(owner===myPlayerNum && enemyTarget===i) wrapper.classList.add('target');
-
-
-        const color = (owner === 1) ? 'blue' : 'green';
- 
-        const imgPath = isAnimating 
-            ? `polyhedral_dice/d${d.s}_sheet.png` 
-            : `polyhedral_dice/d${d.s}_hires_${d.v}.png`; 
+        // Choose between sheet (rolling) or hires (static)
+        const imgType = isAnimating ? 'sheet' : 'hires';
+        const imgPath = `polyhedral_dice/d${d.s}_${imgType}.png`;
         
         wrapper.innerHTML = `
             <div class="die-scene ${isAnimating ? 'rolling' : ''}">
                 <img src="polyhedral_dice/d${d.s}_blank.png" class="die-blank">
                 
                 <img src="${imgPath}" class="die-img">
+                
+                <div class="die-val">${d.v}</div>
             </div>
-            <div class="die-val">${d.v}</div>
             <div class="die-sides">d${d.s}</div>`;
 
-        
         wrapper.onclick = () => {
-            if(turn!==myPlayerNum) return;
+            if(turn !== myPlayerNum) return;
             if(mindMode) {
-                // In mind mode: click own die appends to equation if not in eq
-                if(owner===myPlayerNum) {
+                if(owner === myPlayerNum) {
                     if(!inEqIndices.has(i)) addDieToEquation(i);
                 } else {
-                    selectedOpp = (selectedOpp===i) ? null : i;
+                    selectedOpp = (selectedOpp === i) ? null : i;
                     syncSelection(); render();
                 }
             } else {
-                if(owner===myPlayerNum) {
-                    selectedOwn = selectedOwn.includes(i) ? selectedOwn.filter(x=>x!==i) : [...selectedOwn, i];
+                if(owner === myPlayerNum) {
+                    selectedOwn = selectedOwn.includes(i) ? selectedOwn.filter(x => x !== i) : [...selectedOwn, i];
                 } else {
-                    selectedOpp = (selectedOpp===i) ? null : i;
+                    selectedOpp = (selectedOpp === i) ? null : i;
                 }
                 syncSelection(); render();
             }
         };
-
-        // DRAG SOURCE (own dice in mind mode)
-        if(owner===myPlayerNum && mindMode) {
-            wrapper.draggable = true;
-            wrapper.addEventListener('dragstart', e => {
-                if(inEqIndices.has(i)) { e.preventDefault(); return; }
-                dragSrcIdx = i;
-                e.dataTransfer.effectAllowed = 'copy';
-                e.dataTransfer.setData('text/plain', i);
-                wrapper.style.opacity = '0.5';
-            });
-            wrapper.addEventListener('dragend', () => { wrapper.style.opacity = '1'; });
-        }
-
         container.appendChild(wrapper);
     });
 }
-
 // ── SYNC SELECTION ───────────────────────────────────────────────────────────
 function syncSelection() {
     if(!currentRoomName) return;
