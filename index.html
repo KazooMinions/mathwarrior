@@ -6,7 +6,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
@@ -507,7 +506,7 @@ const db = firebase.database();
 // ── DICE ASSETS / RENDER MODE ───────────────────────────────────────────────
 const P1_IMGS = { 4:'d4_blue.png',6:'d6_blue.png',8:'d8_blue.png',10:'d10_blue.png',12:'d12_blue.png',20:'d20_blue.png' };
 const P2_IMGS = { 4:'d4_green.png',6:'d6_green.png',8:'d8_green.png',10:'d10_green.png',12:'d12_green.png',20:'d20_green.png' };
-const wants3D = new URLSearchParams(window.location.search).get('dice3d') === '1';
+const wants3D = false;
 
 // ── 3D DICE ENGINE ────────────────────────────────────────────────────────────
 const diceVisuals = new Map();
