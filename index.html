@@ -244,21 +244,38 @@
 
         /* ANIMATION (Fixed Issue 1: Sprite Slicing) */
         .rolling .die-img {
-            height: 64px;
-            width: auto; 
-            display: block;
-            /* Use 48 steps to hit every single frame in the sheet */
-            animation: play-sprite 0.8s steps(48) infinite;
+            height: 486px; /* 6 rows * 81px (scaled) */
+            width: 648px;  /* 8 cols * 81px (scaled) */
+            position: absolute;
+            left: 0;
+            top: 0;
+            /* This animates both X and Y to cycle through the grid */
+            animation: 
+                play-x 0.4s steps(8) infinite,
+                play-y 2.4s steps(6) infinite;
         }
         
-        @keyframes play-sprite {
-            from { transform: translateX(0); }
-            /* 64px * 48 frames = 3072px */
-            to { transform: translateX(-3072px); } 
+        /* Move left to right through the 8 columns */
+        @keyframes play-x {
+            from { left: 0; }
+            to { left: -648px; } 
         }
-
-        .rolling .die-scene {
-            filter: brightness(1.3) drop-shadow(0 0 8px var(--gold));
+        
+        /* Move top to bottom through the 6 rows */
+        @keyframes play-y {
+            from { top: 0; }
+            to { top: -486px; }
+        }
+        
+        /* Adjust the scene to fit the scaled frames */
+        .die-scene {
+            width: 81px; 
+            height: 81px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         /* When not rolling, center the high-res image */
