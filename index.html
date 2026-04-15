@@ -31,6 +31,7 @@
             overflow-x: hidden;
         }
 
+        /* ─── STARFIELD BG ─── */
         body::before {
             content: '';
             position: fixed; inset: 0;
@@ -40,8 +41,8 @@
                 radial-gradient(1px 1px at 50% 70%, rgba(255,255,255,0.5) 0%, transparent 100%),
                 radial-gradient(1px 1px at 90% 80%, rgba(255,255,255,0.2) 0%, transparent 100%),
                 radial-gradient(1px 1px at 10% 60%, rgba(255,255,255,0.3) 0%, transparent 100%),
-                radial-gradient(600px at 20% 50%, rgba(52,52,120,0.15), transparent),
-                radial-gradient(600px at 80% 50%, rgba(52,20,80,0.15), transparent);
+                radial-gradient(600px at 20% 50%, rgba(52, 52, 120, 0.15), transparent),
+                radial-gradient(600px at 80% 50%, rgba(52, 20, 80, 0.15), transparent);
             pointer-events: none;
             z-index: 0;
         }
@@ -54,6 +55,7 @@
             letter-spacing: 0.08em;
             background: linear-gradient(135deg, #f0c040 0%, #fff5c0 50%, #f0c040 100%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            text-shadow: none;
             padding: 18px 0 4px;
             text-align: center;
         }
@@ -67,6 +69,7 @@
             margin-bottom: 16px;
         }
 
+        /* ─── MSG / LOG ─── */
         #msg-display {
             text-align: center;
             font-size: 1.2em;
@@ -89,216 +92,393 @@
             color: #8f8;
             min-height: 20px;
         }
-
         .hidden { display: none !important; }
 
-        /* ── LOBBY ── */
-        #lobby-container { display: flex; flex-direction: column; align-items: center; gap: 18px; margin-top: 20px; }
-        #lobby { padding: 28px 24px; background: var(--panel2); border: 1px solid var(--border); border-radius: 16px; width: min(380px, 92vw); }
-        #lobby input { width: 100%; padding: 10px 14px; background: rgba(255,255,255,0.06); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'Rajdhani', sans-serif; font-size: 1em; margin-bottom: 10px; }
+        /* ─── LOBBY ─── */
+        #lobby-container {
+            display: flex; flex-direction: column; align-items: center; gap: 18px; margin-top: 20px;
+        }
+        #lobby {
+            padding: 28px 24px; background: var(--panel2);
+            border: 1px solid var(--border); border-radius: 16px;
+            width: min(380px, 92vw);
+        }
+        #lobby input {
+            width: 100%; padding: 10px 14px;
+            background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+            border-radius: 8px; color: var(--text); font-family: 'Rajdhani', sans-serif;
+            font-size: 1em; margin-bottom: 10px;
+        }
         #lobby input:focus { outline: none; border-color: var(--gold); }
-        .browser-box { width: min(420px, 92vw); background: var(--panel2); border: 1px solid var(--border); border-radius: 16px; padding: 16px; }
-        .lobby-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border); }
+        .browser-box {
+            width: min(420px, 92vw); background: var(--panel2);
+            border: 1px solid var(--border); border-radius: 16px; padding: 16px;
+        }
+        .lobby-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px; border-bottom: 1px solid var(--border);
+        }
 
-        /* ── BUTTONS ── */
-        button { padding: 10px 18px; cursor: pointer; border-radius: 8px; font-weight: 700; border: none; margin: 4px; font-family: 'Rajdhani', sans-serif; font-size: 0.95em; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.15s ease; }
+        /* ─── BUTTONS ─── */
+        button {
+            padding: 10px 18px; cursor: pointer; border-radius: 8px;
+            font-weight: 700; border: none; margin: 4px;
+            font-family: 'Rajdhani', sans-serif; font-size: 0.95em;
+            text-transform: uppercase; letter-spacing: 0.05em;
+            transition: all 0.15s ease;
+        }
         button:hover { transform: translateY(-1px); filter: brightness(1.15); }
         button:active { transform: translateY(0); }
+
         .btn-host { background: linear-gradient(135deg, #2980b9, #1a5276); color: white; width: 100%; margin-top: 4px; }
         .btn-join { background: linear-gradient(135deg, #27ae60, #1a6b3c); color: white; padding: 6px 14px; }
-        .btn-atk  { background: linear-gradient(135deg, #e67e22, #a04000); color: white; }
+        .btn-atk { background: linear-gradient(135deg, #e67e22, #a04000); color: white; }
         .btn-pass { background: #333; color: #aaa; }
         .btn-surr { background: linear-gradient(135deg, #c0392b, #7b241c); color: white; }
 
-        /* ── CHIP ── */
-        .chip { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; background: radial-gradient(circle at 35% 35%, #ff6b6b, #c0392b); border-radius: 50%; border: 2px solid rgba(255,255,255,0.4); box-shadow: 0 2px 8px rgba(192,57,43,0.8); margin-left: 8px; font-size: 0.5em; vertical-align: middle; }
-
-        /* ── BOARD ── */
-        .board { display: flex; justify-content: center; gap: 16px; margin-top: 10px; flex-wrap: wrap; padding: 0 10px; }
-        .player-side { border: 2px solid var(--border); padding: 14px; border-radius: 14px; width: min(420px, 96vw); min-height: 200px; background: var(--panel); transition: border-color 0.3s, box-shadow 0.3s; }
-        .player-side h3 { font-family: 'Cinzel Decorative', serif; font-size: 0.9em; letter-spacing: 0.06em; color: var(--gold); }
-        .active { border-color: var(--gold) !important; box-shadow: 0 0 20px rgba(240,192,64,0.15), inset 0 0 40px rgba(240,192,64,0.04); }
-
-        /* ── DICE GRID ── */
-        .dice-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 12px; }
-
-        /* ── DIE WRAPPER ─────────────────────────────────────────────────────────
-           The wrapper is only ever responsible for:
-             1. Its flex layout (centering image + label)
-             2. The fall/capture animation (applied to the whole wrapper)
-             3. Hover lift
-           It does NOT control the rolling animation — that lives on .die-scene.
-        ── */
-        .die-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-            padding: 4px 6px;
-            border-radius: 10px;
-            user-select: none;
-            transition: transform 0.15s;
-            /* Needed so the fall animation doesn't affect siblings */
-            position: relative;
+        /* ─── CHIP ─── */
+        .chip {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 26px; height: 26px;
+            background: radial-gradient(circle at 35% 35%, #ff6b6b, #c0392b);
+            border-radius: 50%; border: 2px solid rgba(255,255,255,0.4);
+            box-shadow: 0 2px 8px rgba(192,57,43,0.8);
+            margin-left: 8px; font-size: 0.5em; vertical-align: middle;
         }
+
+        /* ─── BOARD ─── */
+        .board {
+            display: flex; justify-content: center; gap: 16px; margin-top: 10px;
+            flex-wrap: wrap; padding: 0 10px;
+        }
+
+        .player-side {
+            border: 2px solid var(--border); padding: 14px;
+            border-radius: 14px; width: min(420px, 96vw);
+            min-height: 200px; background: var(--panel);
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .player-side h3 {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 0.9em; letter-spacing: 0.06em; color: var(--gold);
+        }
+        .active {
+            border-color: var(--gold) !important;
+            box-shadow: 0 0 20px rgba(240,192,64,0.15), inset 0 0 40px rgba(240,192,64,0.04);
+        }
+
+        /* ─── DICE ─── */
+        .dice-grid {
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 12px;
+        }
+
+        .die-wrapper {
+            display: flex; flex-direction: column; align-items: center;
+            cursor: pointer; padding: 8px 10px; border-radius: 10px;
+            transition: all 0.15s ease;
+            user-select: none;
+            position: relative; /* Anchor for selection outlines */
+        }
+
         .die-wrapper:hover { transform: translateY(-3px); }
 
-        /* ── CAPTURE FALL ── only applied to the one captured die wrapper ── */
-        .die-wrapper.captured {
-            animation: die-fall 0.6s cubic-bezier(0.4, 0, 1, 1) forwards;
-            pointer-events: none;
-            z-index: 200;
+        /* ONLY spin the image inside a wrapper that has the .rolling class */
+        .die-wrapper.rolling .die-img {
+            animation: 
+                play-x 0.4s steps(8) infinite,
+                play-y 2.4s steps(6) infinite !important;
         }
-        @keyframes die-fall {
-            0%   { transform: translateY(0)    scale(1)    rotate(0deg);  opacity: 1; }
-            15%  { transform: translateY(-12px) scale(1.08) rotate(-4deg); opacity: 1; }
-            100% { transform: translateY(160px) scale(0.4)  rotate(30deg); opacity: 0; }
+        
+        /* ONLY apply the fall/disappear animation to the wrapper being captured */
+        .die-wrapper.captured {
+            animation: die-fall 0.55s forwards;
+            pointer-events: none; /* Prevent clicking it while it's falling */
+            z-index: 100; /* Keep it above others while falling */
+        }
+        
+        /* Ensure other dice stay static */
+        .die-wrapper:not(.rolling) .die-img {
+            animation: none;
+            left: 0;
+            top: 0;
         }
 
-        /* ── DIE SCENE ── the 72×72 viewport for the die image ── */
+        /* SELECTION OUTLINES (Fixed Issue 2) */
+        .die-wrapper.selected .die-scene { outline: 3px solid var(--gold); box-shadow: 0 0 15px var(--gold); border-radius: 8px; }
+        .die-wrapper.in-equation .die-scene { outline: 3px solid var(--blue); box-shadow: 0 0 15px var(--blue); border-radius: 8px; }
+        .die-wrapper.target .die-scene { outline: 3px solid var(--red); box-shadow: 0 0 20px var(--red); border-radius: 8px; }
+        .die-wrapper.enemy-selected .die-scene { outline: 3px solid rgba(255,255,255,0.4); border-radius: 8px; }
+
+        /* The Viewport */
         .die-scene {
-            width: 72px;
-            height: 72px;
+            width: 64px; 
+            height: 64px;
             overflow: hidden;
             position: relative;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.03); /* Subtle backdrop */
             border-radius: 8px;
-            background: rgba(255,255,255,0.02);
-            /* No animation here by default */
         }
 
-        /* Static die image */
-        .die-scene .die-img {
+        /* Base Layer */
+        .die-blank {
             position: absolute;
             width: 64px;
             height: 64px;
-            top: 4px;
-            left: 4px;
+            z-index: 1;
+            pointer-events: none;
         }
 
-        /* Number overlay — always visible on top */
-        .die-scene .die-val {
+        /* Sprite/Hires Layer */
+        .die-img {
             position: absolute;
-            z-index: 10;
-            top: 50%; left: 50%;
+            height: 64px;
+            width: auto;
+            z-index: 2;
+            left: 0;
+            top: 0;
+            pointer-events: none;
+        }
+
+        /* Number Layer (Fixed Issue: visibility) */
+        .die-val {
+            position: absolute;
+            z-index: 10; /* Keep on top of images */
+            top: 50%;
+            left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 1.35em;
+            font-size: 1.4em;
             font-weight: 900;
             color: white;
-            text-shadow: 0 0 6px rgba(0,0,0,1), 0 0 12px rgba(0,0,0,0.8);
+            text-shadow: 0 0 5px rgba(0,0,0,0.9), 0 0 10px rgba(0,0,0,0.5);
             pointer-events: none;
-            line-height: 1;
         }
 
-        /* ── SELECTION OUTLINES ── applied on the scene box, not the wrapper ── */
-        .die-wrapper.selected      .die-scene { outline: 3px solid var(--gold); box-shadow: 0 0 14px var(--gold); }
-        .die-wrapper.in-equation   .die-scene { outline: 3px solid var(--blue); box-shadow: 0 0 14px var(--blue); opacity: 0.6; }
-        .die-wrapper.target        .die-scene { outline: 3px solid var(--red);  box-shadow: 0 0 18px var(--red); }
-        .die-wrapper.enemy-selected .die-scene { outline: 2px dashed rgba(255,255,255,0.35); }
+        .die-sides {
+            font-size: 0.7em;
+            color: rgba(255,255,255,0.4);
+            margin-top: 4px;
+        }
 
-        /* ── ROLL ANIMATION ──────────────────────────────────────────────────────
-           Applied only to .die-scene.rolling (NOT .die-wrapper.rolling).
-           Uses a CSS background-image sprite approach for reliable 2-axis stepping.
-           Sprite sheet layout: 8 columns × 6 rows of 64×64px = 512×384px total.
-           If your sprite sheets use a different layout, adjust the keyframe values below.
-        ── */
-        .die-scene.rolling {
-            /* Override the static img so the bg-sprite is visible */
-            background-color: transparent;
-        }
-        .die-scene.rolling .die-img {
-            /* Hide the static image while rolling; sprite takes over */
-            display: none;
-        }
-        /* The sprite div is injected by JS inside rolling scenes */
-        .die-bg-sprite {
+        /* ANIMATION (Fixed Issue 1: Sprite Slicing) */
+        .rolling .die-img {
+            height: 486px; /* 6 rows * 81px (scaled) */
+            width: 648px;  /* 8 cols * 81px (scaled) */
             position: absolute;
+            left: 0;
+            top: 0;
+            /* This animates both X and Y to cycle through the grid */
+            animation: 
+                play-x 0.4s steps(8) infinite,
+                play-y 2.4s steps(6) infinite;
+        }
+        
+        /* Move left to right through the 8 columns */
+        @keyframes play-x {
+            from { left: 0; }
+            to { left: -648px; } 
+        }
+        
+        /* Move top to bottom through the 6 rows */
+        @keyframes play-y {
+            from { top: 0; }
+            to { top: -486px; }
+        }
+
+        @keyframes die-fall {
+            0% { transform: scale(1) translateY(0); opacity: 1; }
+            20% { transform: scale(1.1) translateY(-10px); } /* Slight pop up */
+            100% { transform: scale(0.5) translateY(150px) rotate(45deg); opacity: 0; }
+        }
+        
+        /* Adjust the scene to fit the scaled frames */
+        .die-scene {
+            width: 81px; 
+            height: 81px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* When not rolling, center the high-res image */
+        .die-scene:not(.rolling) .die-img {
             width: 64px;
-            height: 64px;
-            top: 4px;
-            left: 4px;
-            /* background-image set inline by JS */
-            background-repeat: no-repeat;
-            animation:
-                bg-roll-x 0.48s steps(8, end) infinite,
-                bg-roll-y 2.88s steps(6, end) infinite;
-        }
-        @keyframes bg-roll-x {
-            from { background-position-x: 0px; }
-            to   { background-position-x: -512px; }
-        }
-        @keyframes bg-roll-y {
-            from { background-position-y: 0px; }
-            to   { background-position-y: -384px; }
+            transform: none !important;
+            position: relative; /* Centers it in the flexbox */
         }
 
-        /* If NO sprite sheet: fallback CSS spin on the static image */
-        .die-scene.rolling.no-sheet .die-img {
-            display: block; /* show again */
-            animation: spin-fallback 0.3s linear infinite;
-            transform-origin: center;
-            top: 4px; left: 4px;
-        }
-        @keyframes spin-fallback {
-            from { transform: rotate(0deg); }
-            to   { transform: rotate(360deg); }
+        /* ─── CONTROLS ─── */
+        .controls {
+            display: flex;             /* Use full flex, not inline-flex */
+            justify-content: center;   /* Centers the buttons inside the bar */
+            align-items: center;
+            
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 12px;
+            margin-bottom: 12px;
+        
+            padding: 16px 20px;
+            background: var(--panel2);
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            flex-wrap: wrap;
+            gap: 8px;
+            
+            width: min(860px, 96vw); 
+            box-sizing: border-box;   
         }
 
-        /* Number flickers while rolling */
-        .die-scene.rolling .die-val {
-            animation: val-flicker 0.48s steps(1) infinite;
+        /* ─── DRAG & DROP EQUATION BUILDER ─── */
+        #eq-builder {
+            width: min(860px, 96vw);
+            margin: 10px auto;
+            background: var(--panel2);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 18px;
         }
-        @keyframes val-flicker {
-            0%,100% { opacity: 1; }
-            50%     { opacity: 0; }
+        #eq-builder h4 {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 0.75em; color: var(--gold); letter-spacing: 0.1em;
+            margin-bottom: 10px;
         }
 
-        /* Die label */
-        .die-sides { font-size: 0.7em; color: rgba(255,255,255,0.4); margin-top: 4px; }
+        /* Drop Zone */
+        #eq-slots {
+            display: flex; flex-wrap: wrap; align-items: center;
+            gap: 6px; min-height: 64px;
+            background: rgba(0,0,0,0.35);
+            border: 2px dashed rgba(240,192,64,0.3);
+            border-radius: 10px; padding: 10px 14px;
+            margin-bottom: 10px;
+            transition: border-color 0.2s;
+        }
+        #eq-slots.drag-over {
+            border-color: var(--gold);
+            background: rgba(240,192,64,0.06);
+        }
+        #eq-slots .placeholder-text {
+            color: rgba(255,255,255,0.25);
+            font-style: italic; font-size: 0.9em;
+            pointer-events: none;
+        }
 
-        /* ── CONTROLS ── */
-        .controls { display: flex; justify-content: center; align-items: center; margin: 12px auto; padding: 16px 20px; background: var(--panel2); border-radius: 14px; border: 1px solid var(--border); flex-wrap: wrap; gap: 8px; width: min(860px, 96vw); }
-
-        /* ── EQUATION BUILDER ── */
-        #eq-builder { width: min(860px, 96vw); margin: 10px auto; background: var(--panel2); border: 1px solid var(--border); border-radius: 14px; padding: 14px 18px; }
-        #eq-builder h4 { font-family: 'Cinzel Decorative', serif; font-size: 0.75em; color: var(--gold); letter-spacing: 0.1em; margin-bottom: 10px; }
-        #eq-slots { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-height: 64px; background: rgba(0,0,0,0.35); border: 2px dashed rgba(240,192,64,0.3); border-radius: 10px; padding: 10px 14px; margin-bottom: 10px; transition: border-color 0.2s; }
-        #eq-slots.drag-over { border-color: var(--gold); background: rgba(240,192,64,0.06); }
-        #eq-slots .placeholder-text { color: rgba(255,255,255,0.25); font-style: italic; font-size: 0.9em; pointer-events: none; }
-        .eq-tile { display: inline-flex; flex-direction: column; align-items: center; background: linear-gradient(135deg, #1e1e3a, #2a2a50); border: 1.5px solid rgba(240,192,64,0.5); border-radius: 8px; padding: 6px 10px; font-weight: 700; font-size: 1.1em; cursor: grab; min-width: 42px; position: relative; transition: box-shadow 0.15s; user-select: none; }
+        /* Equation tile (placed) */
+        .eq-tile {
+            display: inline-flex; flex-direction: column; align-items: center;
+            background: linear-gradient(135deg, #1e1e3a, #2a2a50);
+            border: 1.5px solid rgba(240,192,64,0.5);
+            border-radius: 8px; padding: 6px 10px;
+            font-weight: 700; font-size: 1.1em;
+            cursor: grab; min-width: 42px;
+            position: relative;
+            transition: box-shadow 0.15s;
+            user-select: none;
+        }
         .eq-tile:hover { box-shadow: 0 0 10px rgba(240,192,64,0.3); }
-        .eq-tile .remove-tile { position: absolute; top: -6px; right: -6px; width: 16px; height: 16px; background: var(--red); border-radius: 50%; font-size: 0.65em; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; font-weight: 900; opacity: 0; transition: opacity 0.15s; }
+        .eq-tile .remove-tile {
+            position: absolute; top: -6px; right: -6px;
+            width: 16px; height: 16px;
+            background: var(--red); border-radius: 50%;
+            font-size: 0.65em; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: white; font-weight: 900;
+            opacity: 0; transition: opacity 0.15s;
+        }
         .eq-tile:hover .remove-tile { opacity: 1; }
         .eq-tile .tile-sides { font-size: 0.5em; color: rgba(255,255,255,0.4); }
-        .op-tile { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: rgba(255,255,255,0.07); border: 1.5px solid rgba(255,255,255,0.2); border-radius: 8px; font-weight: 700; font-size: 1.2em; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
-        .op-tile:hover { background: rgba(240,192,64,0.2); border-color: var(--gold); }
-        .eq-insert-marker { width: 4px; height: 40px; background: var(--gold); border-radius: 999px; box-shadow: 0 0 10px rgba(240,192,64,0.65); }
-        #op-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+        /* Operator tiles */
+        .op-tile {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 36px; height: 36px;
+            background: rgba(255,255,255,0.07);
+            border: 1.5px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            font-weight: 700; font-size: 1.2em; cursor: pointer;
+            transition: background 0.15s, border-color 0.15s;
+        }
+        .op-tile:hover, .op-tile.active-op { background: rgba(240,192,64,0.2); border-color: var(--gold); }
+        .op-tile[draggable="true"] { cursor: grab; }
+
+        .eq-insert-marker {
+            width: 4px; height: 40px;
+            background: var(--gold);
+            border-radius: 999px;
+            box-shadow: 0 0 10px rgba(240,192,64,0.65);
+        }
+
+        /* Operator picker row */
+        #op-row {
+            display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+        }
         #op-row label { font-size: 0.75em; color: rgba(255,255,255,0.45); margin-right: 4px; }
-        #eq-preview { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 10px; min-height: 28px; }
-        #eq-string { font-family: monospace; font-size: 1em; color: rgba(255,255,255,0.7); background: rgba(0,0,0,0.4); padding: 4px 10px; border-radius: 6px; }
-        #eq-result { font-size: 1em; font-weight: 700; }
-        #eq-result.match  { color: var(--green); }
+
+        /* Equation result preview */
+        #eq-preview {
+            display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+            margin-top: 10px; min-height: 28px;
+        }
+        #eq-string {
+            font-family: monospace; font-size: 1em; color: rgba(255,255,255,0.7);
+            background: rgba(0,0,0,0.4); padding: 4px 10px; border-radius: 6px;
+        }
+        #eq-result {
+            font-size: 1em; font-weight: 700;
+        }
+        #eq-result.match { color: var(--green); }
         #eq-result.nomatch { color: var(--red); }
 
-        .you-label { font-family: 'Rajdhani', sans-serif; font-size: 0.65em; color: var(--blue); border: 1px solid var(--blue); padding: 1px 6px; border-radius: 4px; margin-left: 6px; letter-spacing: 0.05em; vertical-align: middle; }
+        .you-label {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.65em; color: var(--blue);
+            border: 1px solid var(--blue); padding: 1px 6px; border-radius: 4px;
+            margin-left: 6px; letter-spacing: 0.05em; vertical-align: middle;
+        }
 
-        #game-over-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.93); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(8px); }
+        /* ─── GAME OVER ─── */
+        #game-over-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.93);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 1000;
+            backdrop-filter: blur(8px);
+        }
         #game-over-overlay h1 { font-size: 3em; }
 
+        /* ─── WAITING ─── */
         #waiting-screen { text-align: center; padding: 40px; }
-        #waiting-screen h2 { color: var(--blue); font-family: 'Cinzel Decorative', serif; margin-bottom: 20px; animation: pulse 1.5s ease infinite; }
-        @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.4} }
+        #waiting-screen h2 { color: var(--blue); font-family: 'Cinzel Decorative', serif; margin-bottom: 20px; }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+        #waiting-screen h2 { animation: pulse 1.5s ease infinite; }
 
-        #attack-mode-indicator { text-align: center; font-size: 0.75em; color: rgba(255,255,255,0.4); letter-spacing: 0.15em; text-transform: uppercase; margin: 4px 0; }
+        /* ─── ATTACK MODE INDICATOR ─── */
+        #attack-mode-indicator {
+            text-align: center; font-size: 0.75em; color: rgba(255,255,255,0.4);
+            letter-spacing: 0.15em; text-transform: uppercase; margin: 4px 0;
+        }
         #attack-mode-indicator span { color: var(--gold); }
+
+        /* Mobile */
+        @media (max-width: 600px) {
+            .die-img { width: 48px; height: 48px; }
+            .die-val { font-size: 1.2em; }
+        }
     </style>
 </head>
 <body>
     <h1>⚔ MATHS WARRIORS ⚔</h1>
     <div id="subtitle">Online · Two Player · Dice Combat</div>
+
     <div id="msg-display">Enter a username to begin</div>
     <div id="battle-log" class="hidden"></div>
 
+    <!-- LOBBY -->
     <div id="lobby-container">
         <div id="lobby">
             <input type="text" id="username-input" placeholder="Your warrior name...">
@@ -306,16 +486,18 @@
             <button class="btn-host" onclick="joinRoom(1)">⚔ Host Match</button>
         </div>
         <div class="browser-box">
-            <h3 style="margin-top:0;color:#00d4ff;font-family:'Cinzel Decorative',serif;font-size:0.9em;letter-spacing:0.08em;">OPEN ARENAS</h3>
+            <h3 style="margin-top:0; color:#00d4ff; font-family:'Cinzel Decorative',serif; font-size:0.9em; letter-spacing:0.08em;">OPEN ARENAS</h3>
             <div id="room-list"></div>
         </div>
     </div>
 
+    <!-- WAITING -->
     <div id="waiting-screen" class="hidden">
         <h2>Awaiting Challenger...</h2>
         <button class="btn-pass" onclick="location.reload()">Cancel</button>
     </div>
 
+    <!-- MAIN GAME -->
     <div id="main-game" class="hidden">
         <div class="board">
             <div id="p1-area" class="player-side">
@@ -328,42 +510,48 @@
             </div>
         </div>
 
+        <!-- EQUATION BUILDER -->
         <div id="eq-builder" class="hidden">
             <h4>⚡ MIND ATTACK — Drag dice into the equation</h4>
+
+            <!-- Drop zone -->
             <div id="eq-slots">
                 <span class="placeholder-text">Drop your dice here, then add operators between them...</span>
             </div>
+
+            <!-- Operator picker -->
             <div id="op-row">
                 <label>Insert operator:</label>
-                <span class="op-tile" draggable="true" onclick="insertOp('+')" ondragstart="startOpDrag(event,'+')">+</span>
-                <span class="op-tile" draggable="true" onclick="insertOp('−')" ondragstart="startOpDrag(event,'−')">−</span>
-                <span class="op-tile" draggable="true" onclick="insertOp('×')" ondragstart="startOpDrag(event,'×')">×</span>
-                <span class="op-tile" draggable="true" onclick="insertOp('÷')" ondragstart="startOpDrag(event,'÷')">÷</span>
-                <span class="op-tile" draggable="true" onclick="insertOp('(')" ondragstart="startOpDrag(event,'(')"> ( </span>
-                <span class="op-tile" draggable="true" onclick="insertOp(')')" ondragstart="startOpDrag(event,')')"> ) </span>
-                <button class="btn-pass" style="padding:4px 10px;font-size:0.75em;" onclick="clearEquation()">Clear ✕</button>
+                <span class="op-tile" draggable="true" onclick="insertOp('+')" ondragstart="startOpDrag(event, '+')">+</span>
+                <span class="op-tile" draggable="true" onclick="insertOp('−')" ondragstart="startOpDrag(event, '−')">−</span>
+                <span class="op-tile" draggable="true" onclick="insertOp('×')" ondragstart="startOpDrag(event, '×')">×</span>
+                <span class="op-tile" draggable="true" onclick="insertOp('÷')" ondragstart="startOpDrag(event, '÷')">÷</span>
+                <span class="op-tile" draggable="true" onclick="insertOp('(')" ondragstart="startOpDrag(event, '(')"> ( </span>
+                <span class="op-tile" draggable="true" onclick="insertOp(')')" ondragstart="startOpDrag(event, ')')"> ) </span>
+                <button class="btn-pass" style="padding:4px 10px; font-size:0.75em;" onclick="clearEquation()">Clear ✕</button>
             </div>
+
+            <!-- Live preview -->
             <div id="eq-preview">
                 <span id="eq-string">—</span>
                 <span id="eq-result"></span>
             </div>
         </div>
 
+        <!-- CONTROLS -->
         <div id="attack-mode-indicator" class="hidden">Mode: <span id="mode-label">—</span></div>
         <div class="controls">
-            <button id="mind-btn"          class="btn-atk"  onclick="activateMind()">🧠 Mind Attack</button>
-            <button id="confirm-mind-btn"  class="btn-atk hidden" onclick="doMind()" style="background:linear-gradient(135deg,#27ae60,#1a6b3c)">✓ Confirm Mind</button>
+            <button id="mind-btn" class="btn-atk" onclick="activateMind()">🧠 Mind Attack</button>
+            <button id="confirm-mind-btn" class="btn-atk hidden" onclick="doMind()" style="background:linear-gradient(135deg,#27ae60,#1a6b3c)">✓ Confirm Mind</button>
             <button id="switch-attack-btn" class="btn-pass hidden" onclick="switchToStrength()">↔ Switch to Strength</button>
-            <button id="strength-btn"      class="btn-atk"  onclick="doStrength()">💪 Strength Attack</button>
-            <button id="pass-btn"          class="btn-pass" onclick="nextTurn()">⏭ Pass</button>
-            <button                        class="btn-surr"  onclick="surrender()">🏳 Surrender</button>
+            <button id="strength-btn" class="btn-atk" onclick="doStrength()">💪 Strength Attack</button>
+            <button id="pass-btn" class="btn-pass" onclick="nextTurn()">⏭ Pass</button>
+            <button class="btn-surr" onclick="surrender()">🏳 Surrender</button>
         </div>
     </div>
 
 <script>
-// ══════════════════════════════════════════════════════════════════════════════
-// FIREBASE
-// ══════════════════════════════════════════════════════════════════════════════
+// ── FIREBASE CONFIG ──────────────────────────────────────────────────────────
 const firebaseConfig = {
     apiKey: "AIzaSyDHeIncfWQLiZb0Mu7WVB8Jj4GZniZJOg",
     authDomain: "math-warrior-7d2a7.firebaseapp.com",
@@ -376,90 +564,63 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// ══════════════════════════════════════════════════════════════════════════════
-// IMAGES
-// Static images (shown at rest):
-const P1_IMGS   = {4:"d4_blue.png",  6:"d6_blue.png",  8:"d8_blue.png",
-                   10:"d10_blue.png", 12:"d12_blue.png", 20:"d20_blue.png"};
-const P2_IMGS   = {4:"d4_green.png", 6:"d6_green.png", 8:"d8_green.png",
-                   10:"d10_green.png",12:"d12_green.png",20:"d20_green.png"};
+// ── DICE IMAGES ──────────────────────────────────────────────────────────────
+const P1_IMGS = { 4:"d4_blue.png",6:"d6_blue.png",8:"d8_blue.png",10:"d10_blue.png",12:"d12_blue.png",20:"d20_blue.png" };
+const P2_IMGS = { 4:"d4_green.png",6:"d6_green.png",8:"d8_green.png",10:"d10_green.png",12:"d12_green.png",20:"d20_green.png" };
 
-// Sprite sheets for rolling (8 cols × 6 rows of 64×64px frames = 512×384px).
-// If a sheet is missing/null the die will spin via CSS fallback instead.
-const P1_SHEETS = {4:"d4_blue_sheet.png",  6:"d6_blue_sheet.png",  8:"d8_blue_sheet.png",
-                   10:"d10_blue_sheet.png", 12:"d12_blue_sheet.png", 20:"d20_blue_sheet.png"};
-const P2_SHEETS = {4:"d4_green_sheet.png", 6:"d6_green_sheet.png", 8:"d8_green_sheet.png",
-                   10:"d10_green_sheet.png",12:"d12_green_sheet.png",20:"d20_green_sheet.png"};
-
-// ══════════════════════════════════════════════════════════════════════════════
-// GAME STATE
-// ══════════════════════════════════════════════════════════════════════════════
-let p1Dice=[], p2Dice=[], turn=1, myPlayerNum=0, currentRoomName="";
+// ── STATE ────────────────────────────────────────────────────────────────────
+let p1Dice=[], p2Dice=[], turn=1, myPlayerNum=0, currentRoomName="", isAnimating=false;
 let selectedOwn=[], selectedOpp=null, enemySelections=[], enemyTarget=null, penChipOwner=0;
 let p1Name="Player 1", p2Name="Player 2", myName="";
 
-// ── Per-die animation state ────────────────────────────────────────────────
-// These Sets/variables track WHICH specific dice are animated.
-// `isAnimating` is just an input-block flag; it does NOT control any CSS class.
-let isAnimating    = false;
-let rollingDieKeys = new Set();   // "owner-idx" strings → .die-scene.rolling
-let capturedDieKey = null;        // "owner-idx" string  → .die-wrapper.captured
+// Equation builder state
+let equationItems = [];   // Array of { type:'die'|'op', value, dieIdx } 
+let mindMode = false;
+let dragSrcIdx = null;    // index of die being dragged
+let eqDropIndex = null;
 
-// ── Equation builder ───────────────────────────────────────────────────────
-let equationItems = [];
-let mindMode      = false;
-let eqDropIndex   = null;
-
-// ══════════════════════════════════════════════════════════════════════════════
-// HELPERS
-// ══════════════════════════════════════════════════════════════════════════════
+// ── HELPERS ──────────────────────────────────────────────────────────────────
 const setStatus = t => document.getElementById('msg-display').innerText = t;
-const setLog    = t => { const el=document.getElementById('battle-log'); el.innerText=t; el.classList.remove('hidden'); };
-const sortDice  = d => d.sort((a,b) => a.v-b.v || a.s-b.s);
-const dieKey    = (owner, idx) => `${owner}-${idx}`;
+const setLog = t => { const el=document.getElementById('battle-log'); el.innerText=t; el.classList.remove('hidden'); };
+const sortDice = d => d.sort((a,b) => a.v-b.v || a.s-b.s);
 
-// ══════════════════════════════════════════════════════════════════════════════
-// LOBBY
-// ══════════════════════════════════════════════════════════════════════════════
+// ── LOBBY ────────────────────────────────────────────────────────────────────
 db.ref('rooms').on('value', snap => {
     const listDiv = document.getElementById('room-list');
     listDiv.innerHTML = '';
     const rooms = snap.val();
-    if(!rooms){ listDiv.innerHTML='<div style="color:#555;padding:10px">No open arenas</div>'; return; }
+    if(!rooms) { listDiv.innerHTML = '<div style="color:#555;padding:10px">No open arenas</div>'; return; }
     Object.keys(rooms).forEach(key => {
-        if(!rooms[key].winner && rooms[key].count < 2){
+        if(!rooms[key].winner && rooms[key].count < 2) {
             const item = document.createElement('div');
             item.className = 'lobby-item';
-            item.innerHTML = `<span><strong>${key}</strong> <span style="color:#888">vs ${rooms[key].p1Name}</span></span>
-                              <button class="btn-join" onclick="joinRoom(2,'${key}')">Join</button>`;
+            item.innerHTML = `<span><strong>${key}</strong> <span style="color:#888">vs ${rooms[key].p1Name}</span></span><button class="btn-join" onclick="joinRoom(2,'${key}')">Join</button>`;
             listDiv.appendChild(item);
         }
     });
 });
 
-window.joinRoom = async function(pNum, manualRoom=null){
+window.joinRoom = async function(pNum, manualRoom=null) {
     const rName = manualRoom || document.getElementById('room-input').value.trim();
     myName = document.getElementById('username-input').value.trim() || "Warrior";
     if(!rName) return alert("Enter a room name");
 
-    myPlayerNum=pNum; currentRoomName=rName;
-    const roomRef = db.ref('rooms/'+rName);
+    myPlayerNum = pNum; currentRoomName = rName;
+    const roomRef = db.ref('rooms/' + rName);
 
-    if(pNum===1){
+    if(pNum === 1) {
         const sides=[4,6,8,10,12,20], roll=s=>Math.floor(Math.random()*s)+1;
-        let d1=sortDice(sides.map(s=>({s,v:roll(s)})));
-        let d2=sortDice(sides.map(s=>({s,v:roll(s)})));
+        let d1 = sortDice(sides.map(s=>({s,v:roll(s)})));
+        let d2 = sortDice(sides.map(s=>({s,v:roll(s)})));
         let starter=1;
-        for(let i=0;i<6;i++){
+        for(let i=0;i<6;i++) {
             if(d1[i].v<d2[i].v){starter=1;break;}
             if(d2[i].v<d1[i].v){starter=2;break;}
             if(i===5) starter=Math.random()>0.5?1:2;
         }
-        await roomRef.set({p1D:d1,p2D:d2,turn:starter,chip:starter,count:1,
-            p1Name:myName,p2Name:"Waiting...",p1S:[],p2S:[],p1T:null,p2T:null,
-            log:`${myName} created the arena.`});
+        await roomRef.set({ p1D:d1,p2D:d2,turn:starter,chip:starter,count:1,p1Name:myName,p2Name:"Waiting...",p1S:[],p2S:[],p1T:null,p2T:null,log:`${myName} created the arena.` });
     } else {
-        await roomRef.update({count:2, p2Name:myName});
+        await roomRef.update({ count:2, p2Name:myName });
     }
 
     roomRef.on('value', snap => {
@@ -467,7 +628,7 @@ window.joinRoom = async function(pNum, manualRoom=null){
         if(!data) return;
         if(data.winner) return showGameOver(data.winner);
 
-        if(data.count<2){
+        if(data.count < 2) {
             document.getElementById('lobby-container').classList.add('hidden');
             document.getElementById('waiting-screen').classList.remove('hidden');
         } else {
@@ -476,22 +637,18 @@ window.joinRoom = async function(pNum, manualRoom=null){
             document.getElementById('main-game').classList.remove('hidden');
 
             enemySelections = myPlayerNum===1 ? (data.p2S||[]) : (data.p1S||[]);
-            enemyTarget     = myPlayerNum===1 ? data.p2T : data.p1T;
-            p1Dice=data.p1D||[]; p2Dice=data.p2D||[];
-            p1Name=data.p1Name; p2Name=data.p2Name;
-            turn=data.turn; penChipOwner=data.chip;
+            enemyTarget = myPlayerNum===1 ? data.p2T : data.p1T;
+            p1Dice = data.p1D||[]; p2Dice = data.p2D||[];
+            p1Name = data.p1Name; p2Name = data.p2Name;
+            turn = data.turn; penChipOwner = data.chip;
             if(data.log) setLog(data.log);
-            // IMPORTANT: never call render() mid-animation — it would clobber
-            // the in-progress animation classes on specific dice.
             if(!isAnimating) render();
         }
     });
 };
 
-// ══════════════════════════════════════════════════════════════════════════════
-// RENDER
-// ══════════════════════════════════════════════════════════════════════════════
-function render(){
+// ── RENDER ───────────────────────────────────────────────────────────────────
+function render() {
     drawDice('p1-dice', p1Dice, 1);
     drawDice('p2-dice', p2Dice, 2);
 
@@ -499,150 +656,90 @@ function render(){
     document.getElementById('p2-area').className = turn===2 ? 'player-side active' : 'player-side';
 
     document.getElementById('p1-name-display').innerHTML =
-        p1Name+(myPlayerNum===1?'<span class="you-label">YOU</span>':'')+
+        p1Name + (myPlayerNum===1?'<span class="you-label">YOU</span>':'') +
         (penChipOwner===1?'<div class="chip" title="Penalty Chip"></div>':'');
     document.getElementById('p2-name-display').innerHTML =
-        p2Name+(myPlayerNum===2?'<span class="you-label">YOU</span>':'')+
+        p2Name + (myPlayerNum===2?'<span class="you-label">YOU</span>':'') +
         (penChipOwner===2?'<div class="chip" title="Penalty Chip"></div>':'');
 
     setStatus(turn===myPlayerNum ? "YOUR TURN!" : `${turn===1?p1Name:p2Name}'s Turn...`);
+
+    // Update eq builder visibility & preview
     if(mindMode) updateEqPreview();
 }
 
-// ── drawDice ──────────────────────────────────────────────────────────────────
-// CRITICAL DESIGN RULE:
-//   Animation state comes from `rollingDieKeys` (a Set of "owner-idx" strings)
-//   and `capturedDieKey` (a single "owner-idx" string).
-//   The global `isAnimating` flag is ONLY used to block clicks — it is NEVER
-//   used to conditionally add CSS animation classes to dice.
-//   This means unrelated dice always render in their normal static state.
-function drawDice(id, list, owner){
+function drawDice(id, list, owner) {
     const container = document.getElementById(id);
     container.innerHTML = '';
-
-    const inEqIndices = new Set(equationItems.filter(e=>e.type==='die').map(e=>e.dieIdx));
-    const imgMap   = owner===1 ? P1_IMGS   : P2_IMGS;
-    const sheetMap = owner===1 ? P1_SHEETS : P2_SHEETS;
+    
+    const inEqIndices = new Set(
+        equationItems.filter(e => e.type === 'die').map(e => e.dieIdx)
+    );
 
     list.forEach((d, i) => {
-        const key        = dieKey(owner, i);
-        const isRolling  = rollingDieKeys.has(key);
-        const isCaptured = capturedDieKey === key;
-
-        // ── WRAPPER ──────────────────────────────────────────────────────────
         const wrapper = document.createElement('div');
         wrapper.className = 'die-wrapper';
-        wrapper.id = `die-${key}`;          // e.g. "die-1-0", "die-2-3"
+        
+        // Selection/Targeting classes [cite: 155, 156]
+        if(owner === myPlayerNum && inEqIndices.has(i)) wrapper.classList.add('in-equation');
+        else if(owner === myPlayerNum && selectedOwn.includes(i)) wrapper.classList.add('selected');
+        if(owner !== myPlayerNum && selectedOpp === i) wrapper.classList.add('target');
+        if(owner !== myPlayerNum && enemySelections.includes(i)) wrapper.classList.add('enemy-selected');
+        if(owner === myPlayerNum && enemyTarget === i) wrapper.classList.add('target');
 
-        // Capture fall: only on the one captured die
-        if(isCaptured) wrapper.classList.add('captured');
 
-        // Selection classes: skip when the die is mid-animation
-        if(!isRolling && !isCaptured){
-            if(owner===myPlayerNum){
-                if(inEqIndices.has(i))          wrapper.classList.add('in-equation');
-                else if(selectedOwn.includes(i)) wrapper.classList.add('selected');
-                if(enemyTarget===i)              wrapper.classList.add('target');
-            } else {
-                if(selectedOpp===i)              wrapper.classList.add('target');
-                if(enemySelections.includes(i))  wrapper.classList.add('enemy-selected');
-            }
-        }
-
-        // ── SCENE ────────────────────────────────────────────────────────────
-        const scene = document.createElement('div');
-        // Rolling class goes on the SCENE, not the wrapper
-        scene.className = 'die-scene' + (isRolling ? ' rolling' : '');
-
-        if(isRolling){
-            const sheet = sheetMap[d.s];
-            if(sheet){
-                // Sprite sheet: inject the bg-sprite div; .die-img is hidden by CSS
-                const sprite = document.createElement('div');
-                sprite.className = 'die-bg-sprite';
-                sprite.style.backgroundImage = `url('${sheet}')`;
-                scene.appendChild(sprite);
-            } else {
-                // No sheet available: spin the static image as fallback
-                scene.classList.add('no-sheet');
-            }
-            // Static img (hidden when sprite is used; spun when no-sheet)
-            const img = document.createElement('img');
-            img.className = 'die-img'; img.src = imgMap[d.s];
-            scene.appendChild(img);
-        } else {
-            // Normal static render
-            const img = document.createElement('img');
-            img.className = 'die-img'; img.src = imgMap[d.s];
-            scene.appendChild(img);
-        }
-
-        // Number: always present; CSS hides/flickers it during roll
-        const val = document.createElement('div');
-        val.className = 'die-val'; val.textContent = d.v;
-        scene.appendChild(val);
-
-        wrapper.appendChild(scene);
-
-        // Sides label
-        const sides = document.createElement('div');
-        sides.className = 'die-sides'; sides.textContent = `d${d.s}`;
-        wrapper.appendChild(sides);
-
-        // ── CLICK ────────────────────────────────────────────────────────────
+        
+        // Replace the old wrapper.innerHTML block with this:
+        const imgType = isAnimating ? 'sheet' : 'hires';
+        const imgPath = `polyhedral_dice/d${d.s}_${imgType}.png`;
+        
+        wrapper.innerHTML = `
+            <div class="die-scene ${isAnimating ? 'rolling' : ''} ${d.captured ? 'captured' : ''}">
+                <img src="polyhedral_dice/d${d.s}_blank.png" class="die-blank">
+                
+                <img src="${imgPath}" class="die-img">
+                
+                <div class="die-val">${d.v}</div>
+            </div>
+            <div class="die-sides">d${d.s}</div>`;
+                
         wrapper.onclick = () => {
-            if(isAnimating) return;   // block all clicks during sequence
             if(turn !== myPlayerNum) return;
-            if(mindMode){
-                if(owner===myPlayerNum){
+            if(mindMode) {
+                if(owner === myPlayerNum) {
                     if(!inEqIndices.has(i)) addDieToEquation(i);
                 } else {
-                    selectedOpp = (selectedOpp===i) ? null : i;
+                    selectedOpp = (selectedOpp === i) ? null : i;
                     syncSelection(); render();
                 }
             } else {
-                if(owner===myPlayerNum){
-                    selectedOwn = selectedOwn.includes(i)
-                        ? selectedOwn.filter(x=>x!==i) : [...selectedOwn, i];
+                if(owner === myPlayerNum) {
+                    selectedOwn = selectedOwn.includes(i) ? selectedOwn.filter(x => x !== i) : [...selectedOwn, i];
                 } else {
-                    selectedOpp = (selectedOpp===i) ? null : i;
+                    selectedOpp = (selectedOpp === i) ? null : i;
                 }
                 syncSelection(); render();
             }
         };
-
-        // ── DRAG (mind mode) ─────────────────────────────────────────────────
-        if(owner===myPlayerNum && mindMode && !inEqIndices.has(i)){
-            wrapper.draggable = true;
-            wrapper.addEventListener('dragstart', e => {
-                e.dataTransfer.effectAllowed = 'copy';
-                e.dataTransfer.setData('text/plain', String(i));
-                wrapper.style.opacity = '0.5';
-            });
-            wrapper.addEventListener('dragend', () => { wrapper.style.opacity = '1'; });
-        }
-
         container.appendChild(wrapper);
     });
 }
-
-// ══════════════════════════════════════════════════════════════════════════════
-// SYNC SELECTION
-// ══════════════════════════════════════════════════════════════════════════════
-function syncSelection(){
+// ── SYNC SELECTION ───────────────────────────────────────────────────────────
+function syncSelection() {
     if(!currentRoomName) return;
     const upd = {};
-    if(myPlayerNum===1){ upd.p1S=selectedOwn; upd.p1T=selectedOpp; }
-    else                { upd.p2S=selectedOwn; upd.p2T=selectedOpp; }
+    if(myPlayerNum===1) { upd.p1S=selectedOwn; upd.p1T=selectedOpp; }
+    else { upd.p2S=selectedOwn; upd.p2T=selectedOpp; }
     db.ref('rooms/'+currentRoomName).update(upd);
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// EQUATION BUILDER
-// ══════════════════════════════════════════════════════════════════════════════
-function activateMind(){
+// ── EQUATION BUILDER ─────────────────────────────────────────────────────────
+function activateMind() {
     if(turn!==myPlayerNum) return setStatus("Not your turn!");
-    mindMode=true; equationItems=[]; selectedOwn=[]; selectedOpp=null;
+    mindMode = true;
+    equationItems = [];
+    selectedOwn = [];
+    selectedOpp = null;
     document.getElementById('eq-builder').classList.remove('hidden');
     document.getElementById('attack-mode-indicator').classList.remove('hidden');
     document.getElementById('mode-label').innerText = 'MIND ATTACK';
@@ -650,69 +747,88 @@ function activateMind(){
     document.getElementById('switch-attack-btn').classList.remove('hidden');
     document.getElementById('mind-btn').classList.add('hidden');
     document.getElementById('strength-btn').classList.add('hidden');
-    render(); bindEqDropZone();
+
+    render();
+    bindEqDropZone();
     setStatus("Select a target die, then build your equation!");
 }
 
-function addDieToEquation(idx, atIndex=equationItems.length){
+function addDieToEquation(idx, atIndex = equationItems.length) {
     const myD = myPlayerNum===1 ? p1Dice : p2Dice;
-    equationItems.splice(atIndex, 0, {type:'die', value:myD[idx].v, sides:myD[idx].s, dieIdx:idx});
-    updateEqPreview(); render();
+    const newItem = { type:'die', value: myD[idx].v, sides: myD[idx].s, dieIdx: idx };
+    equationItems.splice(atIndex, 0, newItem);
+    updateEqPreview();
+    render();
 }
 
-function insertOp(op, atIndex=equationItems.length){
+function insertOp(op, atIndex = equationItems.length) {
     if(!mindMode) return;
-    equationItems.splice(atIndex, 0, {type:'op', value:op});
-    updateEqPreview(); renderEqSlots();
+    equationItems.splice(atIndex, 0, { type:'op', value: op });
+    updateEqPreview();
+    renderEqSlots();
 }
 
-function startOpDrag(event, op){
+function startOpDrag(event, op) {
     event.dataTransfer.effectAllowed = 'copy';
-    event.dataTransfer.setData('text/plain', JSON.stringify({type:'op', value:op}));
+    event.dataTransfer.setData('text/plain', JSON.stringify({ type:'op', value: op }));
 }
 
-function clearEquation(){ equationItems=[]; updateEqPreview(); render(); }
-function removeEqItem(idx){ equationItems.splice(idx,1); updateEqPreview(); render(); }
+function clearEquation() {
+    equationItems = [];
+    updateEqPreview();
+    render();
+}
 
-function renderEqSlots(){
+function removeEqItem(idx) {
+    equationItems.splice(idx, 1);
+    updateEqPreview();
+    render();
+}
+
+function renderEqSlots() {
     const zone = document.getElementById('eq-slots');
     zone.innerHTML = '';
-    if(!equationItems.length){
+    if(equationItems.length === 0) {
         zone.innerHTML = '<span class="placeholder-text">Drop your dice here, then add operators between them...</span>';
         return;
     }
     const marker = document.createElement('div');
-    marker.className='eq-insert-marker'; marker.id='eq-insert-marker'; marker.style.display='none';
+    marker.className = 'eq-insert-marker';
+    marker.id = 'eq-insert-marker';
+    marker.style.display = 'none';
     zone.appendChild(marker);
 
-    equationItems.forEach((item,i) => {
+    equationItems.forEach((item, i) => {
         const tile = document.createElement('div');
-        tile.dataset.eqIndex=i; tile.draggable=true;
+        tile.dataset.eqIndex = i;
+        tile.draggable = true;
         tile.addEventListener('dragstart', e => {
-            e.dataTransfer.effectAllowed='move';
-            e.dataTransfer.setData('text/plain', JSON.stringify({type:'eq-item', index:i}));
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', JSON.stringify({ type:'eq-item', index:i }));
         });
-        if(item.type==='die'){
-            tile.className='eq-tile';
-            tile.innerHTML=`<div>${item.value}</div><div class="tile-sides">d${item.sides}</div>
-                            <div class="remove-tile" onclick="removeEqItem(${i})">✕</div>`;
+
+        if(item.type === 'die') {
+            tile.className = 'eq-tile';
+            tile.innerHTML = `<div>${item.value}</div><div class="tile-sides">d${item.sides}</div><div class="remove-tile" onclick="removeEqItem(${i})">✕</div>`;
         } else {
-            tile.className='eq-tile';
-            tile.style.background='rgba(240,192,64,0.1)'; tile.style.borderColor='rgba(240,192,64,0.3)';
-            tile.innerHTML=`<div style="font-size:1.2em">${item.value}</div>
-                            <div class="remove-tile" onclick="removeEqItem(${i})">✕</div>`;
+            tile.className = 'eq-tile';
+            tile.style.background = 'rgba(240,192,64,0.1)';
+            tile.style.borderColor = 'rgba(240,192,64,0.3)';
+            tile.innerHTML = `<div style="font-size:1.2em">${item.value}</div><div class="remove-tile" onclick="removeEqItem(${i})">✕</div>`;
         }
         zone.appendChild(tile);
     });
 }
 
-function updateEqPreview(){
+function updateEqPreview() {
     renderEqSlots();
-    const strEl=document.getElementById('eq-string'), resEl=document.getElementById('eq-result');
-    if(!equationItems.length){ strEl.innerText='—'; resEl.innerText=''; return; }
+    const strEl = document.getElementById('eq-string');
+    const resEl = document.getElementById('eq-result');
+
+    if(equationItems.length === 0) { strEl.innerText = '—'; resEl.innerText = ''; return; }
 
     const exprStr = equationItems.map(e => {
-        if(e.type==='op'){
+        if(e.type==='op') {
             if(e.value==='−') return '-';
             if(e.value==='×') return '*';
             if(e.value==='÷') return '/';
@@ -721,20 +837,36 @@ function updateEqPreview(){
         return e.value;
     }).join(' ');
 
-    strEl.innerText = equationItems.map(e=>e.value).join(' ');
+    const displayStr = equationItems.map(e => e.value).join(' ');
+    strEl.innerText = displayStr;
+
     try {
         const result = eval(exprStr);
-        if(typeof result!=='number' || !isFinite(result)) throw new Error();
-        const targetVal = selectedOpp!==null ? (myPlayerNum===1?p2Dice:p1Dice)[selectedOpp]?.v : null;
-        if(targetVal!==null){
-            if(Math.round(result*1000)/1000===targetVal){ resEl.innerText=`= ${result} ✓ MATCH!`; resEl.className='match'; }
-            else { resEl.innerText=`= ${result} ✗ (need ${targetVal})`; resEl.className='nomatch'; }
-        } else { resEl.innerText=`= ${result}`; resEl.className=''; }
-    } catch { resEl.innerText='...'; resEl.className=''; }
+        if(typeof result !== 'number' || !isFinite(result)) throw new Error();
+        const targetVal = selectedOpp !== null ? (myPlayerNum===1 ? p2Dice : p1Dice)[selectedOpp]?.v : null;
+
+        if(targetVal !== null) {
+            if(Math.round(result*1000)/1000 === targetVal) {
+                resEl.innerText = `= ${result} ✓ MATCH!`;
+                resEl.className = 'match';
+            } else {
+                resEl.innerText = `= ${result} ✗ (need ${targetVal})`;
+                resEl.className = 'nomatch';
+            }
+        } else {
+            resEl.innerText = `= ${result}`;
+            resEl.className = '';
+        }
+    } catch {
+        resEl.innerText = '...';
+        resEl.className = '';
+    }
 }
 
-function exitMindMode(){
-    mindMode=false; equationItems=[]; eqDropIndex=null;
+function exitMindMode() {
+    mindMode = false;
+    equationItems = [];
+    eqDropIndex = null;
     document.getElementById('eq-builder').classList.add('hidden');
     document.getElementById('attack-mode-indicator').classList.add('hidden');
     document.getElementById('confirm-mind-btn').classList.add('hidden');
@@ -743,213 +875,222 @@ function exitMindMode(){
     document.getElementById('strength-btn').classList.remove('hidden');
 }
 
-function switchToStrength(){
-    exitMindMode(); selectedOwn=[]; selectedOpp=null; syncSelection(); render();
+function switchToStrength() {
+    if(!mindMode) return;
+    exitMindMode();
+    selectedOwn = [];
+    selectedOpp = null;
+    syncSelection();
+    render();
     setStatus("Mind attack cancelled. Choose your Strength Attack dice.");
 }
 
-function bindEqDropZone(){
+function bindEqDropZone() {
     const zone = document.getElementById('eq-slots');
     zone.ondragover = e => {
-        e.preventDefault(); zone.classList.add('drag-over');
-        eqDropIndex=getEqDropIndex(e.clientX); renderEqInsertMarker();
+        e.preventDefault();
+        zone.classList.add('drag-over');
+        eqDropIndex = getEqDropIndex(e.clientX);
+        renderEqInsertMarker();
     };
     zone.ondragleave = e => {
-        if(!zone.contains(e.relatedTarget)){ zone.classList.remove('drag-over'); hideEqInsertMarker(); }
+        if(!zone.contains(e.relatedTarget)) {
+            zone.classList.remove('drag-over');
+            hideEqInsertMarker();
+        }
     };
     zone.ondrop = e => {
-        e.preventDefault(); zone.classList.remove('drag-over');
-        const raw = e.dataTransfer.getData('text/plain');
-        const dropIdx = eqDropIndex ?? equationItems.length;
+        e.preventDefault();
+        zone.classList.remove('drag-over');
+        const payloadRaw = e.dataTransfer.getData('text/plain');
+        const dropIndex = eqDropIndex ?? equationItems.length;
+
         try {
-            const p = JSON.parse(raw);
-            if(p.type==='eq-item') moveEqItem(p.index, dropIdx);
-            else if(p.type==='op') insertOp(p.value, dropIdx);
+            const payload = JSON.parse(payloadRaw);
+            if(payload.type === 'eq-item') {
+                moveEqItem(payload.index, dropIndex);
+            } else if(payload.type === 'op') {
+                insertOp(payload.value, dropIndex);
+            }
         } catch {
-            const idx = parseInt(raw, 10);
-            if(!isNaN(idx)) addDieToEquation(idx, dropIdx);
+            const idx = parseInt(payloadRaw, 10);
+            if(!isNaN(idx)) addDieToEquation(idx, dropIndex);
         }
+
         hideEqInsertMarker();
     };
 }
 
-function getEqDropIndex(clientX){
-    const tiles=[...document.querySelectorAll('#eq-slots .eq-tile')];
-    if(!tiles.length) return 0;
-    for(let i=0;i<tiles.length;i++){
-        const r=tiles[i].getBoundingClientRect();
-        if(clientX < r.left+r.width/2) return i;
+function getEqDropIndex(clientX) {
+    const tiles = [...document.querySelectorAll('#eq-slots .eq-tile')];
+    if(tiles.length === 0) return 0;
+    for (let i = 0; i < tiles.length; i++) {
+        const rect = tiles[i].getBoundingClientRect();
+        if(clientX < rect.left + rect.width / 2) return i;
     }
     return tiles.length;
 }
 
-function renderEqInsertMarker(){
-    const zone=document.getElementById('eq-slots'), marker=document.getElementById('eq-insert-marker');
-    if(!marker||eqDropIndex===null) return;
-    const tiles=[...zone.querySelectorAll('.eq-tile')];
-    marker.style.display='block';
-    if(eqDropIndex>=tiles.length) zone.appendChild(marker);
+function renderEqInsertMarker() {
+    const zone = document.getElementById('eq-slots');
+    const marker = document.getElementById('eq-insert-marker');
+    if(!marker || eqDropIndex===null) return;
+    const tiles = [...zone.querySelectorAll('.eq-tile')];
+    marker.style.display = 'block';
+    if(eqDropIndex >= tiles.length) zone.appendChild(marker);
     else zone.insertBefore(marker, tiles[eqDropIndex]);
 }
 
-function hideEqInsertMarker(){
-    eqDropIndex=null;
-    const m=document.getElementById('eq-insert-marker');
-    if(m) m.style.display='none';
+function hideEqInsertMarker() {
+    eqDropIndex = null;
+    const marker = document.getElementById('eq-insert-marker');
+    if(marker) marker.style.display = 'none';
 }
 
-function moveEqItem(fromIdx, toIdx){
-    if(fromIdx===toIdx||fromIdx<0||fromIdx>=equationItems.length) return;
-    const [moved]=equationItems.splice(fromIdx,1);
-    const adj = fromIdx<toIdx ? toIdx-1 : toIdx;
-    equationItems.splice(adj,0,moved);
+function moveEqItem(fromIdx, toIdx) {
+    if(fromIdx === toIdx || fromIdx < 0 || fromIdx >= equationItems.length) return;
+    const [moved] = equationItems.splice(fromIdx, 1);
+    const adjustedTo = fromIdx < toIdx ? toIdx - 1 : toIdx;
+    equationItems.splice(adjustedTo, 0, moved);
     updateEqPreview();
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// ATTACKS
-// ══════════════════════════════════════════════════════════════════════════════
-window.doStrength = function(){
-    if(isAnimating) return;
+// ── STRENGTH ATTACK ──────────────────────────────────────────────────────────
+window.doStrength = function() {
     if(turn!==myPlayerNum) return setStatus("Not your turn!");
-    if(selectedOwn.length!==1||selectedOpp===null) return setStatus("Select exactly 1 die + 1 target!");
-    const myD=myPlayerNum===1?p1Dice:p2Dice, opD=myPlayerNum===1?p2Dice:p1Dice;
+    if(selectedOwn.length!==1 || selectedOpp===null) return setStatus("Select exactly 1 die + 1 target!");
+    const myD = myPlayerNum===1 ? p1Dice : p2Dice;
+    const opD = myPlayerNum===1 ? p2Dice : p1Dice;
     const atk=myD[selectedOwn[0]], def=opD[selectedOpp];
-    if(atk.v>=def.v) executeCap(`${myName} used Strength Attack! ${atk.v} ≥ ${def.v}`, [selectedOwn[0]], selectedOpp, atk, def);
+    if(atk.v >= def.v) executeCap(`${myName} used Strength Attack! ${atk.v} ≥ ${def.v}`, atk, def);
     else setStatus(`Strength too low! ${atk.v} < ${def.v}`);
 };
 
-window.doMind = function(){
-    if(isAnimating) return;
+// ── MIND ATTACK ──────────────────────────────────────────────────────────────
+window.doMind = function() {
     if(selectedOpp===null) return setStatus("Select a target die first!");
     const diceItems = equationItems.filter(e=>e.type==='die');
-    if(diceItems.length<2) return setStatus("Use at least 2 dice in the equation!");
-    const defVal = (myPlayerNum===1?p2Dice:p1Dice)[selectedOpp].v;
-    const exprStr = equationItems.map(e=>{
-        if(e.type==='op'){if(e.value==='−')return'-';if(e.value==='×')return'*';if(e.value==='÷')return'/';return e.value;}
+    if(diceItems.length < 2) return setStatus("Use at least 2 dice in the equation!");
+
+    const defVal = (myPlayerNum===1 ? p2Dice : p1Dice)[selectedOpp].v;
+
+    const exprStr = equationItems.map(e => {
+        if(e.type==='op') {
+            if(e.value==='−') return '-';
+            if(e.value==='×') return '*';
+            if(e.value==='÷') return '/';
+            return e.value;
+        }
         return e.value;
     }).join(' ');
-    let result;
-    try{ result=eval(exprStr); } catch{ return setStatus("Invalid formula!"); }
-    if(Math.round(result*1000)/1000!==defVal) return setStatus(`${result} ≠ ${defVal}. Try again!`);
 
-    const usedIndices = diceItems.map(e=>e.dieIdx);
-    executeCap(`${myName} used Mind Attack! ${equationItems.map(e=>e.value).join(' ')} = ${defVal}`, usedIndices, selectedOpp);
+    let result;
+    try { result = eval(exprStr); } catch { return setStatus("Invalid formula!"); }
+
+    if(Math.round(result*1000)/1000 !== defVal) return setStatus(`${result} ≠ ${defVal}. Try again!`);
+
+    // Valid!
+    executeCap(`${myName} used Mind Attack! ${equationItems.map(e=>e.value).join(' ')} = ${defVal}`);
     exitMindMode();
 };
 
-// ══════════════════════════════════════════════════════════════════════════════
-// EXECUTE CAPTURE
-// ══════════════════════════════════════════════════════════════════════════════
-// Parameters:
-//   logMsg       — string to write to the battle log
-//   ownIndices   — array of MY die indices that are rerolled after the attack
-//   oppIdx       — index of the OPPONENT die being captured (falls + removed)
-//   atkDie/defDie — optional, used only for penalty-chip check on Strength Attack
-//
-// Animation sequence:
-//   Phase 1 (0–600ms):  capturedDieKey is set → that one die plays .captured fall
-//   Phase 2 (600–1300ms): rollingDieKeys is set → only ownIndices dice play .rolling
-//   Phase 3 (1300ms+):  state committed to Firebase, animation keys cleared, render()
-function executeCap(logMsg, ownIndices, oppIdx, atkDie, defDie){
+// ── EXECUTE CAPTURE ──────────────────────────────────────────────────────────
+function executeCap(logMsg, atkDie, defDie) {
     if(isAnimating) return;
     isAnimating = true;
+    render();
 
     const defSide = myPlayerNum===1 ? 2 : 1;
+    const targetEl = document.getElementById(`die-${defSide}-${selectedOpp}`);
+    if(targetEl) targetEl.classList.add('captured');
 
-    // ── Penalty chip check ────────────────────────────────────────────────────
+    // Determine which own dice are being used
+    const usedIndices = mindMode
+        ? equationItems.filter(e=>e.type==='die').map(e=>e.dieIdx)
+        : [...selectedOwn];
+
+    // Penalty chip check
     const opD = myPlayerNum===1 ? p2Dice : p1Dice;
-    if(opD.length===1 && penChipOwner===myPlayerNum && atkDie && atkDie.v<=defDie.v){
+    if(opD.length===1 && penChipOwner===myPlayerNum && atkDie && atkDie.v <= defDie.v) {
         db.ref('rooms/'+currentRoomName).update({
             winner: myPlayerNum===1?2:1,
-            log: `Penalty Chip Violation: ${myName} failed the final blow!`
+            log:`Penalty Chip Violation: ${myName} failed the final blow!`
         });
-        isAnimating=false; return;
+        isAnimating = false; return;
     }
 
-    // ── PHASE 1: Captured die falls ───────────────────────────────────────────
-    capturedDieKey = dieKey(defSide, oppIdx);
-    rollingDieKeys.clear();
-    render();   // only the captured die gets .captured; all others static
-
     setTimeout(() => {
-        capturedDieKey = null;
-
-        // ── PHASE 2: Used dice roll ───────────────────────────────────────────
-        rollingDieKeys.clear();
-        ownIndices.forEach(idx => rollingDieKeys.add(dieKey(myPlayerNum, idx)));
-        render();   // only ownIndices dice get .die-scene.rolling; all others static
+        // Rolling animation on used dice
+        usedIndices.forEach(idx => {
+            const el = document.getElementById(`die-${myPlayerNum}-${idx}`);
+            if(el) el.classList.add('rolling');
+        });
 
         setTimeout(() => {
-            rollingDieKeys.clear();
+            const myD = myPlayerNum===1 ? [...p1Dice] : [...p2Dice];
+            const op = myPlayerNum===1 ? [...p2Dice] : [...p1Dice];
 
-            // ── PHASE 3: Commit state change ─────────────────────────────────
-            // Deep-copy to avoid mutating Firebase snapshot references
-            const myD = (myPlayerNum===1 ? p1Dice : p2Dice).map(d=>({...d}));
-            const op  = (myPlayerNum===1 ? p2Dice : p1Dice).map(d=>({...d}));
+            op.splice(selectedOpp, 1);
 
-            op.splice(oppIdx, 1);   // remove captured die
-
-            if(op.length===0){
-                db.ref('rooms/'+currentRoomName).update({winner:myPlayerNum, log:logMsg});
+            if(op.length===0) {
+                db.ref('rooms/'+currentRoomName).update({ winner:myPlayerNum, log:logMsg });
                 isAnimating=false; return;
             }
 
-            // Reroll ONLY the used dice
-            ownIndices.forEach(idx => {
-                myD[idx].v = Math.floor(Math.random() * myD[idx].s) + 1;
+            // Reroll used dice
+            usedIndices.forEach(idx => {
+                myD[idx] = { ...myD[idx], v: Math.floor(Math.random()*myD[idx].s)+1 };
             });
 
             const newP1 = myPlayerNum===1 ? sortDice(myD) : op;
             const newP2 = myPlayerNum===2 ? sortDice(myD) : op;
 
-            selectedOwn=[]; selectedOpp=null; equationItems=[];
+            selectedOwn=[]; selectedOpp=null;
+            equationItems=[];
 
             db.ref('rooms/'+currentRoomName).update({
                 p1D:newP1, p2D:newP2,
-                turn: myPlayerNum===1 ? 2 : 1,
+                turn: myPlayerNum===1?2:1,
                 p1S:[], p2S:[], p1T:null, p2T:null,
                 log:logMsg, lastCap:null
-            }).then(() => {
-                isAnimating = false;
-                render();   // clean re-render with new dice values, no animation classes
+            }).then(() => { 
+                isAnimating=false; 
+                render(); 
             });
 
-        }, 700);   // roll duration
-    }, 600);       // fall duration
+        }, 700);
+    }, 550);
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// PASS / SURRENDER
-// ══════════════════════════════════════════════════════════════════════════════
-window.nextTurn = function(){
-    exitMindMode(); selectedOwn=[]; selectedOpp=null;
+// ── PASS / SURRENDER ─────────────────────────────────────────────────────────
+window.nextTurn = function() {
+    exitMindMode();
+    selectedOwn=[]; selectedOpp=null;
     db.ref('rooms/'+currentRoomName).update({
         turn: myPlayerNum===1?2:1, p1S:[],p2S:[],p1T:null,p2T:null, lastCap:null,
-        log: `${myName} passed their turn.`
+        log:`${myName} passed their turn.`
     });
 };
 
-window.surrender = function(){
-    if(confirm("Surrender the battle?"))
-        db.ref('rooms/'+currentRoomName).update({winner:myPlayerNum===1?2:1, log:`${myName} surrendered.`});
+window.surrender = function() {
+    if(confirm("Surrender the battle?")) {
+        db.ref('rooms/'+currentRoomName).update({ winner:myPlayerNum===1?2:1, log:`${myName} surrendered.` });
+    }
 };
 
-// ══════════════════════════════════════════════════════════════════════════════
-// GAME OVER
-// ══════════════════════════════════════════════════════════════════════════════
-function showGameOver(winnerId){
+// ── GAME OVER ─────────────────────────────────────────────────────────────────
+function showGameOver(winnerId) {
     if(document.getElementById('game-over-overlay')) return;
     const isWin = winnerId===myPlayerNum;
-    const wName = winnerId===1 ? p1Name : p2Name;
+    const wName = winnerId===1?p1Name:p2Name;
     const overlay = document.createElement('div');
-    overlay.id = 'game-over-overlay';
-    overlay.innerHTML = `
+    overlay.id='game-over-overlay';
+    overlay.innerHTML=`
         <h1 style="font-family:'Cinzel Decorative',serif;color:${isWin?'#f0c040':'#e74c3c'}">${isWin?'⚔ VICTORY ⚔':'💀 DEFEAT'}</h1>
         <p style="font-size:1.3em;margin:12px 0">${wName} wins the match!</p>
         <button class="btn-host" style="margin-top:20px" onclick="location.reload()">Return to Lobby</button>`;
     document.body.appendChild(overlay);
-    if(isWin) confetti({particleCount:250, spread:110, origin:{y:0.6}});
+    if(isWin) confetti({ particleCount:250, spread:110, origin:{y:0.6} });
 }
 </script>
 </body>
