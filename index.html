@@ -224,17 +224,24 @@
 
         /* ─── CONTROLS ─── */
         .controls {
-            display: flex; /* Changed from inline-flex */
-            justify-content: center;
+            display: flex;             /* Use full flex, not inline-flex */
+            justify-content: center;   /* Centers the buttons inside the bar */
             align-items: center;
-            margin: 12px auto;
+            
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 12px;
+            margin-bottom: 12px;
+        
             padding: 16px 20px;
             background: var(--panel2);
             border-radius: 14px;
             border: 1px solid var(--border);
             flex-wrap: wrap;
             gap: 8px;
-            width: min(860px, 96vw); /* Keep this to match your board width */
+            
+            width: min(860px, 96vw); 
+            box-sizing: border-box;   
         }
 
         /* ─── DRAG & DROP EQUATION BUILDER ─── */
