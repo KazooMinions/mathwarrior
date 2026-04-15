@@ -244,13 +244,17 @@
 
         /* ANIMATION (Fixed Issue 1: Sprite Slicing) */
         .rolling .die-img {
-            animation: play-sprite 0.6s steps(15) infinite;
+            height: 64px;
+            width: auto; 
+            display: block;
+            /* Use 48 steps to hit every single frame in the sheet */
+            animation: play-sprite 0.8s steps(48) infinite;
         }
-
+        
         @keyframes play-sprite {
             from { transform: translateX(0); }
-            /* Must match your sheet width: (64px * 15 frames) = 960px */
-            to { transform: translateX(-960px); } 
+            /* 64px * 48 frames = 3072px */
+            to { transform: translateX(-3072px); } 
         }
 
         .rolling .die-scene {
