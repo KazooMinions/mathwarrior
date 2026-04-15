@@ -606,9 +606,11 @@ const setStatus = t => document.getElementById('msg-display').innerText = t;
 const setLog = t => { const el=document.getElementById('battle-log'); el.innerText=t; el.classList.remove('hidden'); };
 const sortDice = d => d.sort((a,b) => a.v-b.v || a.s-b.s);
 const visualKey = (owner, idx) => `diev-${owner}-${idx}`;
+let activeVisualKeys = new Set();
 
 function mount3DDie(sceneEl, owner, idx, sides, value) {
     const key = visualKey(owner, idx);
+    activeVisualKeys.add(key);
     if(diceVisuals.has(key)) {
         const existing = diceVisuals.get(key);
         if(existing.sides !== sides) {
@@ -629,6 +631,15 @@ function mount3DDie(sceneEl, owner, idx, sides, value) {
 function roll3DDie(owner, idx) {
     const engine = diceVisuals.get(visualKey(owner, idx));
     if(engine) engine.rollFor();
+}
+
+function cleanupUnusedDiceVisuals() {
+    for (const [key, engine] of diceVisuals.entries()) {
+        if(!activeVisualKeys.has(key)) {
+            engine.destroy();
+            diceVisuals.delete(key);
+        }
+    }
 }
 
 // ── LOBBY ────────────────────────────────────────────────────────────────────
@@ -696,8 +707,10 @@ window.joinRoom = async function(pNum, manualRoom=null) {
 
 // ── RENDER ───────────────────────────────────────────────────────────────────
 function render() {
+    activeVisualKeys = new Set();
     drawDice('p1-dice', p1Dice, 1);
     drawDice('p2-dice', p2Dice, 2);
+    cleanupUnusedDiceVisuals();
 
     document.getElementById('p1-area').className = turn===1 ? 'player-side active' : 'player-side';
     document.getElementById('p2-area').className = turn===2 ? 'player-side active' : 'player-side';
