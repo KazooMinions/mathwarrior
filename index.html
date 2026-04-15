@@ -186,16 +186,13 @@
         .die-scene {
             width: 58px; height: 58px;
             transform-style: preserve-3d;
+            animation: idleTilt 2.5s ease-in-out infinite;
             filter: drop-shadow(0 8px 10px rgba(0,0,0,0.45));
-            position: relative;
-            border-radius: 10px;
-            overflow: hidden;
-            background: radial-gradient(circle at 50% 35%, rgba(255,255,255,0.08), rgba(0,0,0,0.24));
         }
-        .die-canvas {
-            width: 58px;
-            height: 58px;
-            display: block;
+        .die-img {
+            width: 58px; height: 58px;
+            transform: translateZ(12px);
+            backface-visibility: hidden;
         }
         .die-val {
             font-size: 1.4em; font-weight: 700; margin-top: 4px;
@@ -217,6 +214,10 @@
             80%  { transform: rotateX(680deg) rotateY(350deg) scale(1.1); }
             100% { transform: rotateX(720deg) rotateY(360deg) scale(1); }
         }
+        @keyframes idleTilt {
+            0%, 100% { transform: rotateX(14deg) rotateY(-18deg); }
+            50% { transform: rotateX(22deg) rotateY(16deg); }
+        }
         @keyframes numFlicker {
             0%, 100% { opacity: 1; }
             25% { opacity: 0.2; content: "?"; }
@@ -224,7 +225,8 @@
             75% { opacity: 0.3; }
         }
         .rolling .die-scene {
-            filter: brightness(1.35) drop-shadow(0 0 12px var(--gold));
+            animation: roll3d 0.7s cubic-bezier(0.4,0,0.2,1) both;
+            filter: brightness(1.6) drop-shadow(0 0 12px var(--gold));
         }
         .rolling .die-val {
             animation: numFlicker 0.7s ease both;
@@ -751,10 +753,11 @@ function drawDice(id, list, owner) {
         if(owner===myPlayerNum && enemyTarget===i) wrapper.classList.add('target');
 
         wrapper.innerHTML = `
-            <div class="die-scene"></div>
+            <div class="die-scene">
+                <img src="${(owner===1?P1_IMGS:P2_IMGS)[d.s]}" class="die-img" draggable="${owner===myPlayerNum && mindMode ? 'true' : 'false'}">
+            </div>
             <div class="die-val">${d.v}</div>
             <div class="die-sides">d${d.s}</div>`;
-        mount3DDie(wrapper.querySelector('.die-scene'), owner, i, d.s, d.v);
 
         // Normal click selection
         wrapper.onclick = () => {
