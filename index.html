@@ -181,37 +181,62 @@
             perspective: 650px;
         }
         .die-wrapper:hover { transform: translateY(-3px); }
-
+        
+        /* Container for the sprite viewport */
         .die-scene {
-            width: 58px; height: 58px;
-            transform-style: preserve-3d;
-            animation: idleTilt 2.5s ease-in-out infinite;
-            filter: drop-shadow(0 8px 10px rgba(0,0,0,0.45));
+            width: 64px; 
+            height: 64px;
+            overflow: hidden;
+            position: relative;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
+        
+        /* The Sprite Sheet itself */
         .die-img {
-            width: 58px; height: 58px;
-            transform: translateZ(12px);
-            backface-visibility: hidden;
+            height: 64px;
+            width: auto; /* Width will be calculated by the number of frames */
+            position: absolute;
+            left: 0;
+            top: 0;
+            pointer-events: none;
         }
-        .die-val {
-            font-size: 1.4em; font-weight: 700; margin-top: 4px;
-            min-width: 30px; text-align: center;
+        
+        /* High-speed rolling animation */
+        .rolling .die-img {
+            animation: play-sprite 0.6s steps(15) infinite; 
         }
-        .die-sides { font-size: 0.65em; color: rgba(255,255,255,0.35); letter-spacing: 0.05em; }
 
-        .selected { border-color: var(--blue); background: rgba(52,152,219,0.18); }
-        .target { border-color: var(--red); box-shadow: 0 0 14px rgba(231,76,60,0.5); }
-        .enemy-selected { border-color: rgba(255,255,255,0.25); border-style: dashed; }
-        .in-equation { border-color: var(--gold); background: rgba(240,192,64,0.12); opacity: 0.55; cursor: default; }
-
-        /* ─── DICE ROLL ANIMATION ─── */
-        @keyframes roll3d {
-            0%   { transform: rotateX(0deg) rotateY(0deg) scale(1); }
-            20%  { transform: rotateX(180deg) rotateY(90deg) scale(1.15); }
-            40%  { transform: rotateX(360deg) rotateY(180deg) scale(1.05); }
-            60%  { transform: rotateX(540deg) rotateY(270deg) scale(1.2); }
-            80%  { transform: rotateX(680deg) rotateY(350deg) scale(1.1); }
-            100% { transform: rotateX(720deg) rotateY(360deg) scale(1); }
+        /* Stack the layers: Blank on bottom, Image on top */
+        .die-blank {
+            position: absolute;
+            width: 64px;
+            height: 64px;
+            z-index: 1;
+        }
+        
+        .die-img {
+            position: absolute;
+            z-index: 2;
+            height: 64px;
+        }
+        
+        /* Ensure the hires version is centered and not "offset" like the sheet */
+        .die-scene:not(.rolling) .die-img {
+            width: 64px;
+            transform: none !important;
+        }
+        
+        @keyframes play-sprite {
+            from { transform: translateX(0); }
+            to { transform: translateX(-960px); } /* Assuming 15 frames at 64px each */
+        }
+        
+        /* Landing state: ensure the image shows the first frame (or a static result) */
+        .die-wrapper:not(.rolling) .die-img {
+            transform: translateX(0);
         }
         @keyframes idleTilt {
             0%, 100% { transform: rotateX(14deg) rotateY(-18deg); }
@@ -615,14 +640,23 @@ function drawDice(id, list, owner) {
         if(owner!==myPlayerNum && enemySelections.includes(i)) wrapper.classList.add('enemy-selected');
         if(owner===myPlayerNum && enemyTarget===i) wrapper.classList.add('target');
 
+
+        const color = (owner === 1) ? 'blue' : 'green';
+ 
+        const imgPath = isAnimating 
+            ? `polyhedral_dice/d${d.s}_sheet.png` 
+            : `polyhedral_dice/d${d.s}_hires_${d.v}.png`; 
+        
         wrapper.innerHTML = `
-            <div class="die-scene">
-                <img src="${(owner===1?P1_IMGS:P2_IMGS)[d.s]}" class="die-img" draggable="${owner===myPlayerNum && mindMode ? 'true' : 'false'}">
+            <div class="die-scene ${isAnimating ? 'rolling' : ''}">
+                <img src="polyhedral_dice/d${d.s}_blank.png" class="die-blank">
+                
+                <img src="${imgPath}" class="die-img">
             </div>
             <div class="die-val">${d.v}</div>
             <div class="die-sides">d${d.s}</div>`;
 
-        // Normal click selection
+        
         wrapper.onclick = () => {
             if(turn!==myPlayerNum) return;
             if(mindMode) {
@@ -934,6 +968,7 @@ window.doMind = function() {
 function executeCap(logMsg, atkDie, defDie) {
     if(isAnimating) return;
     isAnimating = true;
+    render();
 
     const defSide = myPlayerNum===1 ? 2 : 1;
     const targetEl = document.getElementById(`die-${defSide}-${selectedOpp}`);
@@ -988,7 +1023,10 @@ function executeCap(logMsg, atkDie, defDie) {
                 turn: myPlayerNum===1?2:1,
                 p1S:[], p2S:[], p1T:null, p2T:null,
                 log:logMsg, lastCap:null
-            }).then(() => { isAnimating=false; render(); });
+            }).then(() => { 
+                isAnimating=false; 
+                render(); 
+            });
 
         }, 700);
     }, 550);
