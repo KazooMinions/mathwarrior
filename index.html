@@ -6,7 +6,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
@@ -186,32 +185,13 @@
         .die-scene {
             width: 58px; height: 58px;
             transform-style: preserve-3d;
+            animation: idleTilt 2.5s ease-in-out infinite;
             filter: drop-shadow(0 8px 10px rgba(0,0,0,0.45));
-            position: relative;
-            border-radius: 10px;
-            overflow: hidden;
-            background: radial-gradient(circle at 50% 35%, rgba(255,255,255,0.08), rgba(0,0,0,0.24));
-        }
-        .die-canvas {
-            width: 58px;
-            height: 58px;
-            display: block;
         }
         .die-img {
-            width: 58px;
-            height: 58px;
-            display: block;
-            object-fit: contain;
-            filter: drop-shadow(0 6px 8px rgba(0,0,0,0.4));
-        }
-        .die-fallback {
             width: 58px; height: 58px;
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 10px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.18), rgba(255,255,255,0.05));
-            border: 1px solid rgba(255,255,255,0.22);
-            font-size: 0.8em; font-weight: 700;
-            color: rgba(255,255,255,0.75);
+            transform: translateZ(12px);
+            backface-visibility: hidden;
         }
         .die-val {
             font-size: 1.4em; font-weight: 700; margin-top: 4px;
@@ -233,6 +213,10 @@
             80%  { transform: rotateX(680deg) rotateY(350deg) scale(1.1); }
             100% { transform: rotateX(720deg) rotateY(360deg) scale(1); }
         }
+        @keyframes idleTilt {
+            0%, 100% { transform: rotateX(14deg) rotateY(-18deg); }
+            50% { transform: rotateX(22deg) rotateY(16deg); }
+        }
         @keyframes numFlicker {
             0%, 100% { opacity: 1; }
             25% { opacity: 0.2; content: "?"; }
@@ -240,7 +224,8 @@
             75% { opacity: 0.3; }
         }
         .rolling .die-scene {
-            filter: brightness(1.35) drop-shadow(0 0 12px var(--gold));
+            animation: roll3d 0.7s cubic-bezier(0.4,0,0.2,1) both;
+            filter: brightness(1.6) drop-shadow(0 0 12px var(--gold));
         }
         .rolling .die-val {
             animation: numFlicker 0.7s ease both;
@@ -406,7 +391,7 @@
 
         /* Mobile */
         @media (max-width: 600px) {
-            .die-canvas, .die-fallback, .die-img { width: 48px; height: 48px; }
+            .die-img { width: 48px; height: 48px; }
             .die-val { font-size: 1.2em; }
         }
     </style>
@@ -504,119 +489,9 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// ── DICE ASSETS / RENDER MODE ───────────────────────────────────────────────
-const P1_IMGS = { 4:'d4_blue.png',6:'d6_blue.png',8:'d8_blue.png',10:'d10_blue.png',12:'d12_blue.png',20:'d20_blue.png' };
-const P2_IMGS = { 4:'d4_green.png',6:'d6_green.png',8:'d8_green.png',10:'d10_green.png',12:'d12_green.png',20:'d20_green.png' };
-const wants3D = new URLSearchParams(window.location.search).get('dice3d') !== '0';
-
-// ── 3D DICE ENGINE ────────────────────────────────────────────────────────────
-const diceVisuals = new Map();
-const supportsWebGL = (() => {
-    try {
-        const canvas = document.createElement('canvas');
-        return !!(canvas.getContext('webgl') || canvas.getContext('experimental-webgl'));
-    } catch {
-        return false;
-    }
-})();
-const canUseThree = wants3D && typeof THREE !== 'undefined' && supportsWebGL;
-
-class MiniDiceEngine {
-    constructor(container, sides, owner, initialValue) {
-        this.container = container;
-        this.sides = sides;
-        this.owner = owner;
-        this.value = initialValue || 1;
-        this.rollingUntil = 0;
-        this.spin = { x: 0.01, y: 0.013, z: 0.009 };
-        this.baseColor = owner === 1 ? 0x4b9fff : 0x46d36b;
-
-        this.scene = new THREE.Scene();
-        this.camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
-        this.camera.position.set(0, 0, 5);
-
-        this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        this.renderer.setSize(58, 58);
-        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-        this.renderer.domElement.className = 'die-canvas';
-        this.container.innerHTML = '';
-        this.container.appendChild(this.renderer.domElement);
-
-        const key = `${owner}-${this.sides}`;
-        if(!geometryCache[key]) geometryCache[key] = this.makeGeometry(sides);
-        const geometry = geometryCache[key];
-
-        const material = new THREE.MeshStandardMaterial({
-            color: this.baseColor,
-            metalness: 0.12,
-            roughness: 0.28,
-            emissive: 0x121212
-        });
-        this.mesh = new THREE.Mesh(geometry, material);
-        this.scene.add(this.mesh);
-
-        const lightA = new THREE.DirectionalLight(0xffffff, 1.2);
-        lightA.position.set(2.5, 3.5, 4.5);
-        this.scene.add(lightA);
-
-        const lightB = new THREE.DirectionalLight(0x88aaff, 0.55);
-        lightB.position.set(-2.5, -2, 3);
-        this.scene.add(lightB);
-        this.scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-
-        this.settleToValue(this.value);
-        this.tick = this.tick.bind(this);
-        this.tick();
-    }
-
-    makeGeometry(sides) {
-        if(sides === 4) return new THREE.TetrahedronGeometry(1.12);
-        if(sides === 6) return new THREE.BoxGeometry(1.62, 1.62, 1.62, 1, 1, 1);
-        if(sides === 8) return new THREE.OctahedronGeometry(1.2);
-        if(sides === 10) return new THREE.CylinderGeometry(0.95, 0.95, 1.7, 10, 1);
-        if(sides === 12) return new THREE.DodecahedronGeometry(1.2);
-        return new THREE.IcosahedronGeometry(1.18); // d20
-    }
-
-    rollFor(duration = 730) {
-        this.rollingUntil = performance.now() + duration;
-        this.spin.x = 0.22 + Math.random() * 0.2;
-        this.spin.y = 0.2 + Math.random() * 0.2;
-        this.spin.z = 0.18 + Math.random() * 0.18;
-    }
-
-    settleToValue(value) {
-        this.value = value;
-        const seed = value * (this.sides + 11);
-        this.mesh.rotation.x = (seed * 0.37) % (Math.PI * 2);
-        this.mesh.rotation.y = (seed * 0.59) % (Math.PI * 2);
-        this.mesh.rotation.z = (seed * 0.83) % (Math.PI * 2);
-    }
-
-    destroy() {
-        cancelAnimationFrame(this.rafId);
-        this.renderer.dispose();
-    }
-
-    tick() {
-        const now = performance.now();
-        const rolling = now < this.rollingUntil;
-        if(rolling) {
-            this.mesh.rotation.x += this.spin.x;
-            this.mesh.rotation.y += this.spin.y;
-            this.mesh.rotation.z += this.spin.z;
-            this.mesh.scale.setScalar(1.08);
-        } else {
-            this.mesh.rotation.x += 0.0065;
-            this.mesh.rotation.y += 0.008;
-            this.mesh.rotation.z += 0.0035;
-            this.mesh.scale.lerp(new THREE.Vector3(1,1,1), 0.2);
-        }
-
-        this.renderer.render(this.scene, this.camera);
-        this.rafId = requestAnimationFrame(this.tick);
-    }
-}
+// ── DICE IMAGES ──────────────────────────────────────────────────────────────
+const P1_IMGS = { 4:"d4_blue.png",6:"d6_blue.png",8:"d8_blue.png",10:"d10_blue.png",12:"d12_blue.png",20:"d20_blue.png" };
+const P2_IMGS = { 4:"d4_green.png",6:"d6_green.png",8:"d8_green.png",10:"d10_green.png",12:"d12_green.png",20:"d20_green.png" };
 
 // ── STATE ────────────────────────────────────────────────────────────────────
 let p1Dice=[], p2Dice=[], turn=1, myPlayerNum=0, currentRoomName="", isAnimating=false;
@@ -633,62 +508,6 @@ let eqDropIndex = null;
 const setStatus = t => document.getElementById('msg-display').innerText = t;
 const setLog = t => { const el=document.getElementById('battle-log'); el.innerText=t; el.classList.remove('hidden'); };
 const sortDice = d => d.sort((a,b) => a.v-b.v || a.s-b.s);
-const visualKey = (owner, idx) => `diev-${owner}-${idx}`;
-let activeVisualKeys = new Set();
-const geometryCache = {};
-
-function renderDieVisual(sceneEl, owner, idx, sides, value, draggable) {
-    if(!canUseThree) {
-        cleanup3DDie(owner, idx);
-        const imgMap = owner===1 ? P1_IMGS : P2_IMGS;
-        sceneEl.innerHTML = `<img src="${imgMap[sides]}" class="die-img" draggable="${draggable ? 'true' : 'false'}" alt="d${sides}">`;
-        return;
-    }
-
-    mount3DDie(sceneEl, owner, idx, sides, value);
-}
-
-function mount3DDie(sceneEl, owner, idx, sides, value) {
-    const key = visualKey(owner, idx);
-    activeVisualKeys.add(key);
-    if(diceVisuals.has(key)) {
-        const existing = diceVisuals.get(key);
-        if(existing.sides !== sides) {
-            existing.destroy();
-            diceVisuals.delete(key);
-        } else {
-            existing.container = sceneEl;
-            sceneEl.innerHTML = '';
-            sceneEl.appendChild(existing.renderer.domElement);
-            existing.settleToValue(value);
-            return;
-        }
-    }
-    const engine = new MiniDiceEngine(sceneEl, sides, owner, value);
-    diceVisuals.set(key, engine);
-}
-
-function cleanup3DDie(owner, idx) {
-    const key = visualKey(owner, idx);
-    if(diceVisuals.has(key)) {
-        diceVisuals.get(key).destroy();
-        diceVisuals.delete(key);
-    }
-}
-
-function roll3DDie(owner, idx) {
-    const engine = diceVisuals.get(visualKey(owner, idx));
-    if(engine) engine.rollFor();
-}
-
-function cleanupUnusedDiceVisuals() {
-    for (const [key, engine] of diceVisuals.entries()) {
-        if(!activeVisualKeys.has(key)) {
-            engine.destroy();
-            diceVisuals.delete(key);
-        }
-    }
-}
 
 // ── LOBBY ────────────────────────────────────────────────────────────────────
 db.ref('rooms').on('value', snap => {
@@ -755,10 +574,8 @@ window.joinRoom = async function(pNum, manualRoom=null) {
 
 // ── RENDER ───────────────────────────────────────────────────────────────────
 function render() {
-    activeVisualKeys = new Set();
     drawDice('p1-dice', p1Dice, 1);
     drawDice('p2-dice', p2Dice, 2);
-    if(canUseThree) cleanupUnusedDiceVisuals();
 
     document.getElementById('p1-area').className = turn===1 ? 'player-side active' : 'player-side';
     document.getElementById('p2-area').className = turn===2 ? 'player-side active' : 'player-side';
@@ -799,10 +616,11 @@ function drawDice(id, list, owner) {
         if(owner===myPlayerNum && enemyTarget===i) wrapper.classList.add('target');
 
         wrapper.innerHTML = `
-            <div class="die-scene"></div>
+            <div class="die-scene">
+                <img src="${(owner===1?P1_IMGS:P2_IMGS)[d.s]}" class="die-img" draggable="${owner===myPlayerNum && mindMode ? 'true' : 'false'}">
+            </div>
             <div class="die-val">${d.v}</div>
             <div class="die-sides">d${d.s}</div>`;
-        renderDieVisual(wrapper.querySelector('.die-scene'), owner, i, d.s, d.v, owner===myPlayerNum && mindMode);
 
         // Normal click selection
         wrapper.onclick = () => {
@@ -1141,7 +959,6 @@ function executeCap(logMsg, atkDie, defDie) {
         usedIndices.forEach(idx => {
             const el = document.getElementById(`die-${myPlayerNum}-${idx}`);
             if(el) el.classList.add('rolling');
-            if(canUseThree) roll3DDie(myPlayerNum, idx);
         });
 
         setTimeout(() => {
