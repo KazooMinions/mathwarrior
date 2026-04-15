@@ -186,11 +186,15 @@
         
         /* ONLY apply the fall/disappear animation to the wrapper being captured */
         .die-wrapper.captured {
-            animation: die-fall 0.55s forwards;
-            pointer-events: none; /* Prevent clicking it while it's falling */
-            z-index: 100; /* Keep it above others while falling */
+            animation: die-fall 0.6s ease-in forwards;
+            /* This makes the die ignore mouse clicks while it's falling */
+            pointer-events: none; 
+            z-index: 100;
         }
-        
+        .die-wrapper:not(.captured) {
+            pointer-events: auto !important;
+            cursor: pointer;
+        }
         /* Ensure other dice stay static */
         .die-wrapper:not(.rolling) .die-img {
             animation: none !important;
@@ -691,24 +695,14 @@ function drawDice(containerId, diceData, owner) {
             <div class="die-sides">d${d.s}</div>
         `;
                         
-        wrapper.onclick = () => {
-            if(turn !== myPlayerNum) return;
-            if(mindMode) {
-                if(owner === myPlayerNum) {
-                    if(!inEqIndices.has(i)) addDieToEquation(i);
-                } else {
-                    selectedOpp = (selectedOpp === i) ? null : i;
-                    syncSelection(); render();
-                }
-            } else {
-                if(owner === myPlayerNum) {
-                    selectedOwn = selectedOwn.includes(i) ? selectedOwn.filter(x => x !== i) : [...selectedOwn, i];
-                } else {
-                    selectedOpp = (selectedOpp === i) ? null : i;
-                }
-                syncSelection(); render();
-            }
+        wrapper.onclick = (e) => {
+            // Stop clicks ONLY if the game is currently mid-animation
+            if (isAnimating) return; 
+            
+            // Allow clicking even if the die is rolling/selected
+            selectDie(owner, i); 
         };
+
         container.appendChild(wrapper);
     });
 }
@@ -1047,8 +1041,14 @@ function executeCap(logMsg, atkDie, defDie) {
                 p1S: [], p2S: [], p1T: null, p2T: null,
                 log: logMsg, lastCap: null
             }).then(() => { 
+                // CRITICAL: If these two lines don't run, the game stays "frozen"
                 isAnimating = false; 
+                rollingIndices = []; 
                 render(); 
+            }).catch(err => {
+                // If there's an error, unfreeze the game anyway
+                isAnimating = false;
+                console.error(err);
             });
 
         }, 700);
