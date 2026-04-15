@@ -185,8 +185,10 @@
         /* ONLY spin the image inside a wrapper that has the .rolling class */
         .die-wrapper.rolling .die-img {
             position: absolute;
-            width: 1080px; /* Real width of your sheet */
-            height: 810px; /* Real height of your sheet */
+            /* 1080px (original) / 135px (frame) = 8 frames. 
+               8 frames * 64px (new size) = 512px total width. */
+            width: 512px; 
+            height: 384px; /* 6 frames * 64px = 384px total height. */
             left: 0;
             top: 0;
             visibility: visible !important;
@@ -217,8 +219,8 @@
 
         /* The Viewport */
         .die-scene {
-            width: 135px;  /* 1080 width / 8 columns = 135px */
-            height: 135px; /* 810 height / 6 rows = 135px */
+            width: 64px;
+            height: 64px;
             overflow: hidden;
             position: relative;
             display: flex;
@@ -226,8 +228,6 @@
             justify-content: center;
             background: rgba(255,255,255,0.03);
             border-radius: 8px;
-            /* Scale the whole die down so it doesn't look huge on the board */
-            transform: scale(0.6); 
         }
 
         /* Base Layer */
@@ -286,12 +286,12 @@
         /* Move left to right through the 8 columns */
         @keyframes play-x {
             from { transform: translateX(0); }
-            to { transform: translateX(-1080px); }
+            to { transform: translateX(-512px); }
         }
         
         @keyframes play-y {
             from { transform: translateY(0); }
-            to { transform: translateY(-810px); }
+            to { transform: translateY(-384px); }
         }
 
         @keyframes die-fall {
@@ -303,10 +303,12 @@
 
         /* When not rolling, center the high-res image */
         .die-scene:not(.rolling) .die-img {
-            width: 100px; /* Adjust to fit inside your 135px window */
-            height: auto;
-            position: relative;
+            width: 64px;
+            height: 64px;
+            position: absolute;
             transform: none !important;
+            left: 0;
+            top: 0;
         }
 
         /* ─── CONTROLS ─── */
