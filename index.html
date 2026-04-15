@@ -178,10 +178,21 @@
             border: 2px solid transparent;
             transition: border-color 0.15s, background 0.15s, transform 0.15s;
             user-select: none;
+            perspective: 650px;
         }
         .die-wrapper:hover { transform: translateY(-3px); }
 
-        .die-img { width: 58px; height: 58px; }
+        .die-scene {
+            width: 58px; height: 58px;
+            transform-style: preserve-3d;
+            animation: idleTilt 2.5s ease-in-out infinite;
+            filter: drop-shadow(0 8px 10px rgba(0,0,0,0.45));
+        }
+        .die-img {
+            width: 58px; height: 58px;
+            transform: translateZ(12px);
+            backface-visibility: hidden;
+        }
         .die-val {
             font-size: 1.4em; font-weight: 700; margin-top: 4px;
             min-width: 30px; text-align: center;
@@ -202,13 +213,17 @@
             80%  { transform: rotateX(680deg) rotateY(350deg) scale(1.1); }
             100% { transform: rotateX(720deg) rotateY(360deg) scale(1); }
         }
+        @keyframes idleTilt {
+            0%, 100% { transform: rotateX(14deg) rotateY(-18deg); }
+            50% { transform: rotateX(22deg) rotateY(16deg); }
+        }
         @keyframes numFlicker {
             0%, 100% { opacity: 1; }
             25% { opacity: 0.2; content: "?"; }
             50% { opacity: 0.5; }
             75% { opacity: 0.3; }
         }
-        .rolling .die-img {
+        .rolling .die-scene {
             animation: roll3d 0.7s cubic-bezier(0.4,0,0.2,1) both;
             filter: brightness(1.6) drop-shadow(0 0 12px var(--gold));
         }
@@ -314,6 +329,14 @@
             transition: background 0.15s, border-color 0.15s;
         }
         .op-tile:hover, .op-tile.active-op { background: rgba(240,192,64,0.2); border-color: var(--gold); }
+        .op-tile[draggable="true"] { cursor: grab; }
+
+        .eq-insert-marker {
+            width: 4px; height: 40px;
+            background: var(--gold);
+            border-radius: 999px;
+            box-shadow: 0 0 10px rgba(240,192,64,0.65);
+        }
 
         /* Operator picker row */
         #op-row {
@@ -424,12 +447,12 @@
             <!-- Operator picker -->
             <div id="op-row">
                 <label>Insert operator:</label>
-                <span class="op-tile" onclick="insertOp('+')">+</span>
-                <span class="op-tile" onclick="insertOp('−')">−</span>
-                <span class="op-tile" onclick="insertOp('×')">×</span>
-                <span class="op-tile" onclick="insertOp('÷')">÷</span>
-                <span class="op-tile" onclick="insertOp('(')"> ( </span>
-                <span class="op-tile" onclick="insertOp(')')"> ) </span>
+                <span class="op-tile" draggable="true" onclick="insertOp('+')" ondragstart="startOpDrag(event, '+')">+</span>
+                <span class="op-tile" draggable="true" onclick="insertOp('−')" ondragstart="startOpDrag(event, '−')">−</span>
+                <span class="op-tile" draggable="true" onclick="insertOp('×')" ondragstart="startOpDrag(event, '×')">×</span>
+                <span class="op-tile" draggable="true" onclick="insertOp('÷')" ondragstart="startOpDrag(event, '÷')">÷</span>
+                <span class="op-tile" draggable="true" onclick="insertOp('(')" ondragstart="startOpDrag(event, '(')"> ( </span>
+                <span class="op-tile" draggable="true" onclick="insertOp(')')" ondragstart="startOpDrag(event, ')')"> ) </span>
                 <button class="btn-pass" style="padding:4px 10px; font-size:0.75em;" onclick="clearEquation()">Clear ✕</button>
             </div>
 
@@ -445,6 +468,7 @@
         <div class="controls">
             <button id="mind-btn" class="btn-atk" onclick="activateMind()">🧠 Mind Attack</button>
             <button id="confirm-mind-btn" class="btn-atk hidden" onclick="doMind()" style="background:linear-gradient(135deg,#27ae60,#1a6b3c)">✓ Confirm Mind</button>
+            <button id="switch-attack-btn" class="btn-pass hidden" onclick="switchToStrength()">↔ Switch to Strength</button>
             <button id="strength-btn" class="btn-atk" onclick="doStrength()">💪 Strength Attack</button>
             <button id="pass-btn" class="btn-pass" onclick="nextTurn()">⏭ Pass</button>
             <button class="btn-surr" onclick="surrender()">🏳 Surrender</button>
@@ -478,6 +502,7 @@ let p1Name="Player 1", p2Name="Player 2", myName="";
 let equationItems = [];   // Array of { type:'die'|'op', value, dieIdx } 
 let mindMode = false;
 let dragSrcIdx = null;    // index of die being dragged
+let eqDropIndex = null;
 
 // ── HELPERS ──────────────────────────────────────────────────────────────────
 const setStatus = t => document.getElementById('msg-display').innerText = t;
@@ -591,7 +616,9 @@ function drawDice(id, list, owner) {
         if(owner===myPlayerNum && enemyTarget===i) wrapper.classList.add('target');
 
         wrapper.innerHTML = `
-            <img src="${(owner===1?P1_IMGS:P2_IMGS)[d.s]}" class="die-img" draggable="${owner===myPlayerNum && mindMode ? 'true' : 'false'}">
+            <div class="die-scene">
+                <img src="${(owner===1?P1_IMGS:P2_IMGS)[d.s]}" class="die-img" draggable="${owner===myPlayerNum && mindMode ? 'true' : 'false'}">
+            </div>
             <div class="die-val">${d.v}</div>
             <div class="die-sides">d${d.s}</div>`;
 
@@ -653,36 +680,33 @@ function activateMind() {
     document.getElementById('attack-mode-indicator').classList.remove('hidden');
     document.getElementById('mode-label').innerText = 'MIND ATTACK';
     document.getElementById('confirm-mind-btn').classList.remove('hidden');
+    document.getElementById('switch-attack-btn').classList.remove('hidden');
     document.getElementById('mind-btn').classList.add('hidden');
     document.getElementById('strength-btn').classList.add('hidden');
 
-    // Setup drop zone
-    const zone = document.getElementById('eq-slots');
-    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
-    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
-    zone.addEventListener('drop', e => {
-        e.preventDefault();
-        zone.classList.remove('drag-over');
-        const idx = parseInt(e.dataTransfer.getData('text/plain'));
-        if(!isNaN(idx)) addDieToEquation(idx);
-    });
-
     render();
+    bindEqDropZone();
     setStatus("Select a target die, then build your equation!");
 }
 
-function addDieToEquation(idx) {
+function addDieToEquation(idx, atIndex = equationItems.length) {
     const myD = myPlayerNum===1 ? p1Dice : p2Dice;
-    equationItems.push({ type:'die', value: myD[idx].v, sides: myD[idx].s, dieIdx: idx });
+    const newItem = { type:'die', value: myD[idx].v, sides: myD[idx].s, dieIdx: idx };
+    equationItems.splice(atIndex, 0, newItem);
     updateEqPreview();
     render();
 }
 
-function insertOp(op) {
+function insertOp(op, atIndex = equationItems.length) {
     if(!mindMode) return;
-    equationItems.push({ type:'op', value: op });
+    equationItems.splice(atIndex, 0, { type:'op', value: op });
     updateEqPreview();
     renderEqSlots();
+}
+
+function startOpDrag(event, op) {
+    event.dataTransfer.effectAllowed = 'copy';
+    event.dataTransfer.setData('text/plain', JSON.stringify({ type:'op', value: op }));
 }
 
 function clearEquation() {
@@ -704,8 +728,21 @@ function renderEqSlots() {
         zone.innerHTML = '<span class="placeholder-text">Drop your dice here, then add operators between them...</span>';
         return;
     }
+    const marker = document.createElement('div');
+    marker.className = 'eq-insert-marker';
+    marker.id = 'eq-insert-marker';
+    marker.style.display = 'none';
+    zone.appendChild(marker);
+
     equationItems.forEach((item, i) => {
         const tile = document.createElement('div');
+        tile.dataset.eqIndex = i;
+        tile.draggable = true;
+        tile.addEventListener('dragstart', e => {
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', JSON.stringify({ type:'eq-item', index:i }));
+        });
+
         if(item.type === 'die') {
             tile.className = 'eq-tile';
             tile.innerHTML = `<div>${item.value}</div><div class="tile-sides">d${item.sides}</div><div class="remove-tile" onclick="removeEqItem(${i})">✕</div>`;
@@ -765,11 +802,93 @@ function updateEqPreview() {
 function exitMindMode() {
     mindMode = false;
     equationItems = [];
+    eqDropIndex = null;
     document.getElementById('eq-builder').classList.add('hidden');
     document.getElementById('attack-mode-indicator').classList.add('hidden');
     document.getElementById('confirm-mind-btn').classList.add('hidden');
+    document.getElementById('switch-attack-btn').classList.add('hidden');
     document.getElementById('mind-btn').classList.remove('hidden');
     document.getElementById('strength-btn').classList.remove('hidden');
+}
+
+function switchToStrength() {
+    if(!mindMode) return;
+    exitMindMode();
+    selectedOwn = [];
+    selectedOpp = null;
+    syncSelection();
+    render();
+    setStatus("Mind attack cancelled. Choose your Strength Attack dice.");
+}
+
+function bindEqDropZone() {
+    const zone = document.getElementById('eq-slots');
+    zone.ondragover = e => {
+        e.preventDefault();
+        zone.classList.add('drag-over');
+        eqDropIndex = getEqDropIndex(e.clientX);
+        renderEqInsertMarker();
+    };
+    zone.ondragleave = e => {
+        if(!zone.contains(e.relatedTarget)) {
+            zone.classList.remove('drag-over');
+            hideEqInsertMarker();
+        }
+    };
+    zone.ondrop = e => {
+        e.preventDefault();
+        zone.classList.remove('drag-over');
+        const payloadRaw = e.dataTransfer.getData('text/plain');
+        const dropIndex = eqDropIndex ?? equationItems.length;
+
+        try {
+            const payload = JSON.parse(payloadRaw);
+            if(payload.type === 'eq-item') {
+                moveEqItem(payload.index, dropIndex);
+            } else if(payload.type === 'op') {
+                insertOp(payload.value, dropIndex);
+            }
+        } catch {
+            const idx = parseInt(payloadRaw, 10);
+            if(!isNaN(idx)) addDieToEquation(idx, dropIndex);
+        }
+
+        hideEqInsertMarker();
+    };
+}
+
+function getEqDropIndex(clientX) {
+    const tiles = [...document.querySelectorAll('#eq-slots .eq-tile')];
+    if(tiles.length === 0) return 0;
+    for (let i = 0; i < tiles.length; i++) {
+        const rect = tiles[i].getBoundingClientRect();
+        if(clientX < rect.left + rect.width / 2) return i;
+    }
+    return tiles.length;
+}
+
+function renderEqInsertMarker() {
+    const zone = document.getElementById('eq-slots');
+    const marker = document.getElementById('eq-insert-marker');
+    if(!marker || eqDropIndex===null) return;
+    const tiles = [...zone.querySelectorAll('.eq-tile')];
+    marker.style.display = 'block';
+    if(eqDropIndex >= tiles.length) zone.appendChild(marker);
+    else zone.insertBefore(marker, tiles[eqDropIndex]);
+}
+
+function hideEqInsertMarker() {
+    eqDropIndex = null;
+    const marker = document.getElementById('eq-insert-marker');
+    if(marker) marker.style.display = 'none';
+}
+
+function moveEqItem(fromIdx, toIdx) {
+    if(fromIdx === toIdx || fromIdx < 0 || fromIdx >= equationItems.length) return;
+    const [moved] = equationItems.splice(fromIdx, 1);
+    const adjustedTo = fromIdx < toIdx ? toIdx - 1 : toIdx;
+    equationItems.splice(adjustedTo, 0, moved);
+    updateEqPreview();
 }
 
 // ── STRENGTH ATTACK ──────────────────────────────────────────────────────────
