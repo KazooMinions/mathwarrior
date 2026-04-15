@@ -175,14 +175,20 @@
         .die-wrapper {
             display: flex; flex-direction: column; align-items: center;
             cursor: pointer; padding: 8px 10px; border-radius: 10px;
-            border: 2px solid transparent;
-            transition: border-color 0.15s, background 0.15s, transform 0.15s;
+            transition: all 0.15s ease;
             user-select: none;
-            perspective: 650px;
+            position: relative; /* Anchor for selection outlines */
         }
+
         .die-wrapper:hover { transform: translateY(-3px); }
-        
-        /* Container for the sprite viewport */
+
+        /* SELECTION OUTLINES (Fixed Issue 2) */
+        .die-wrapper.selected .die-scene { outline: 3px solid var(--gold); box-shadow: 0 0 15px var(--gold); border-radius: 8px; }
+        .die-wrapper.in-equation .die-scene { outline: 3px solid var(--blue); box-shadow: 0 0 15px var(--blue); border-radius: 8px; }
+        .die-wrapper.target .die-scene { outline: 3px solid var(--red); box-shadow: 0 0 20px var(--red); border-radius: 8px; }
+        .die-wrapper.enemy-selected .die-scene { outline: 3px solid rgba(255,255,255,0.4); border-radius: 8px; }
+
+        /* The Viewport */
         .die-scene {
             width: 64px; 
             height: 64px;
@@ -192,82 +198,71 @@
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-        
-        /* The Sprite Sheet itself */
-        .die-img {
-            height: 64px;
-            width: auto; /* Width will be calculated by the number of frames */
-            position: absolute;
-            left: 0;
-            top: 0;
-            pointer-events: none;
-        }
-        
-        /* High-speed rolling animation */
-        .rolling .die-img {
-            animation: play-sprite 0.6s steps(15) infinite; 
+            background: rgba(255,255,255,0.03); /* Subtle backdrop */
+            border-radius: 8px;
         }
 
-        /* Stack the layers: Blank on bottom, Image on top */
+        /* Base Layer */
         .die-blank {
             position: absolute;
             width: 64px;
             height: 64px;
-            z-index: 1; /* Back */
+            z-index: 1;
+            pointer-events: none;
         }
+
+        /* Sprite/Hires Layer */
         .die-img {
             position: absolute;
             height: 64px;
-            z-index: 2; /* Middle */
+            width: auto;
+            z-index: 2;
+            left: 0;
+            top: 0;
+            pointer-events: none;
         }
+
+        /* Number Layer (Fixed Issue: visibility) */
         .die-val {
             position: absolute;
-            z-index: 10; /* Front */
+            z-index: 10; /* Keep on top of images */
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            font-size: 1.4em;
+            font-weight: 900;
+            color: white;
+            text-shadow: 0 0 5px rgba(0,0,0,0.9), 0 0 10px rgba(0,0,0,0.5);
             pointer-events: none;
         }
-        
-        /* Ensure the hires version is centered and not "offset" like the sheet */
+
+        .die-sides {
+            font-size: 0.7em;
+            color: rgba(255,255,255,0.4);
+            margin-top: 4px;
+        }
+
+        /* ANIMATION (Fixed Issue 1: Sprite Slicing) */
+        .rolling .die-img {
+            animation: play-sprite 0.6s steps(15) infinite;
+        }
+
+        @keyframes play-sprite {
+            from { transform: translateX(0); }
+            /* Must match your sheet width: (64px * 15 frames) = 960px */
+            to { transform: translateX(-960px); } 
+        }
+
+        .rolling .die-scene {
+            filter: brightness(1.3) drop-shadow(0 0 8px var(--gold));
+        }
+
+        /* When not rolling, center the high-res image */
         .die-scene:not(.rolling) .die-img {
             width: 64px;
             transform: none !important;
+            position: relative; /* Centers it in the flexbox */
         }
-        
-        @keyframes play-sprite {
-            from { transform: translateX(0); }
-            to { transform: translateX(-960px); } /* Assuming 15 frames at 64px each */
-        }
-        
-        /* Landing state: ensure the image shows the first frame (or a static result) */
-        .die-wrapper:not(.rolling) .die-img {
-            transform: translateX(0);
-        }
-        @keyframes idleTilt {
-            0%, 100% { transform: rotateX(14deg) rotateY(-18deg); }
-            50% { transform: rotateX(22deg) rotateY(16deg); }
-        }
-        @keyframes numFlicker {
-            0%, 100% { opacity: 1; }
-            25% { opacity: 0.2; content: "?"; }
-            50% { opacity: 0.5; }
-            75% { opacity: 0.3; }
-        }
-        .rolling .die-scene {
-            animation: roll3d 0.7s cubic-bezier(0.4,0,0.2,1) both;
-            filter: brightness(1.6) drop-shadow(0 0 12px var(--gold));
-        }
-        .rolling .die-val {
-            animation: numFlicker 0.7s ease both;
-        }
-
-        @keyframes die-fall {
-            0% { transform: translateY(0) rotate(0); opacity: 1; }
-            100% { transform: translateY(120px) rotate(20deg); opacity: 0; }
-        }
-        .captured { animation: die-fall 0.55s forwards; pointer-events: none; }
 
         /* ─── CONTROLS ─── */
         .controls {
