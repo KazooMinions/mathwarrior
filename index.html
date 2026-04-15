@@ -184,9 +184,15 @@
 
         /* ONLY spin the image inside a wrapper that has the .rolling class */
         .die-wrapper.rolling .die-img {
+            position: absolute;
+            width: 1080px; /* Real width of your sheet */
+            height: 810px; /* Real height of your sheet */
+            left: 0;
+            top: 0;
+            visibility: visible !important;
             animation: 
-                play-x 0.4s steps(8) infinite,
-                play-y 2.4s steps(6) infinite !important;
+                play-x 0.5s steps(8) infinite,
+                play-y 3.0s steps(6) infinite !important;
         }
         
         /* ONLY apply the fall/disappear animation to the wrapper being captured */
@@ -211,16 +217,17 @@
 
         /* The Viewport */
         .die-scene {
-            width: 64px; 
-            height: 64px;
+            width: 135px;  /* 1080 width / 8 columns = 135px */
+            height: 135px; /* 810 height / 6 rows = 135px */
             overflow: hidden;
             position: relative;
-            margin: 0 auto;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(255,255,255,0.03); /* Subtle backdrop */
+            background: rgba(255,255,255,0.03);
             border-radius: 8px;
+            /* Scale the whole die down so it doesn't look huge on the board */
+            transform: scale(0.6); 
         }
 
         /* Base Layer */
@@ -278,14 +285,13 @@
         
         /* Move left to right through the 8 columns */
         @keyframes play-x {
-            from { left: 0; }
-            to { left: -648px; } 
+            from { transform: translateX(0); }
+            to { transform: translateX(-1080px); }
         }
         
-        /* Move top to bottom through the 6 rows */
         @keyframes play-y {
-            from { top: 0; }
-            to { top: -486px; }
+            from { transform: translateY(0); }
+            to { transform: translateY(-810px); }
         }
 
         @keyframes die-fall {
@@ -294,22 +300,13 @@
             100% { transform: scale(0.5) translateY(150px) rotate(45deg); opacity: 0; }
         }
         
-        /* Adjust the scene to fit the scaled frames */
-        .die-scene {
-            width: 81px; 
-            height: 81px;
-            overflow: hidden;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
 
         /* When not rolling, center the high-res image */
         .die-scene:not(.rolling) .die-img {
-            width: 64px;
+            width: 100px; /* Adjust to fit inside your 135px window */
+            height: auto;
+            position: relative;
             transform: none !important;
-            position: relative; /* Centers it in the flexbox */
         }
 
         /* ─── CONTROLS ─── */
