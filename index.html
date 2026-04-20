@@ -225,15 +225,22 @@
             pointer-events: none;
         }
 
-        /* Sprite/Hires Layer */
+
         .die-img {
-            position: absolute;
+            width: 64px;
             height: 64px;
-            width: auto;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain; 
+            position: absolute;
+            inset: 0;
             z-index: 2;
-            left: 0;
-            top: 0;
-            pointer-events: none;
+        }
+        
+
+        .rolling-style {
+            background-size: 512px 384px !important; 
+            image-rendering: pixelated; /* Keeps it sharp */
         }
 
         /* Number Layer (Fixed Issue: visibility) */
@@ -678,7 +685,6 @@ function drawDice(id, list, owner) {
         
         const imgType = isThisDieRolling ? 'sheet' : 'hires';
         const imgPath = `polyhedral_dice/d${d.s}_hires.png`;
-        
         wrapper.innerHTML = `
             <div class="die-scene ${d.captured ? 'captured' : ''}">
                 <img src="polyhedral_dice/d${d.s}_blank.png" class="die-blank">
