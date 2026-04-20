@@ -182,18 +182,6 @@
 
         .die-wrapper:hover { transform: translateY(-3px); }
 
-        /* ONLY spin the image inside a wrapper that has the .rolling class */
-        .die-wrapper.rolling .die-img {
-            width: 512px !important; 
-            height: 384px !important;
-            position: absolute;
-            left: 0;
-            top: 0;
-            display: block !important;
-            animation: 
-                play-x 0.5s steps(8) infinite,
-                play-y 3.0s steps(6) infinite !important;
-        }
         
         /* ONLY apply the fall/disappear animation to the wrapper being captured */
         .die-wrapper.captured {
@@ -268,28 +256,33 @@
             margin-top: 4px;
         }
 
-        /* ANIMATION (Fixed Issue 1: Sprite Slicing) */
-        .rolling .die-img {
-            height: 486px; /* 6 rows * 81px (scaled) */
-            width: 648px;  /* 8 cols * 81px (scaled) */
+        /* The Viewport: A 64x64 window */
+        .die-scene {
+            width: 64px;
+            height: 64px;
+            overflow: hidden;
+            position: relative;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* The Die Face: Switched to background-image for easier frame control */
+        .die-img {
+            width: 64px;
+            height: 64px;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain; 
             position: absolute;
-            left: 0;
-            top: 0;
-            /* This animates both X and Y to cycle through the grid */
-            animation: 
-                play-x 0.4s steps(8) infinite,
-                play-y 2.4s steps(6) infinite;
+            inset: 0;
         }
         
-        /* Move left to right through the 8 columns */
-        @keyframes play-x {
-            from { transform: translateX(0); }
-            to { transform: translateX(-512px); }
-        }
-        
-        @keyframes play-y {
-            from { transform: translateY(0); }
-            to { transform: translateY(-384px); }
+        /* Added dynamically by JS during a roll */
+        .rolling-style {
+            background-size: 512px 384px !important; /* Forces the 8x6 grid scale */
         }
 
         @keyframes die-fall {
@@ -684,13 +677,13 @@ function drawDice(id, list, owner) {
         if(owner !== myPlayerNum && selectedOpp === i) wrapper.classList.add('target');
         
         const imgType = isThisDieRolling ? 'sheet' : 'hires';
-        const imgPath = `polyhedral_dice/d${d.s}_${imgType}.png`;
+        const imgPath = `polyhedral_dice/d${d.s}_hires.png`;
         
         wrapper.innerHTML = `
-            <div class="die-scene ${isThisDieRolling ? 'rolling' : ''} ${d.captured ? 'captured' : ''}">
+            <div class="die-scene ${d.captured ? 'captured' : ''}">
                 <img src="polyhedral_dice/d${d.s}_blank.png" class="die-blank">
-                <img src="${imgPath}" class="die-img">
-                <div class="die-val">${isThisDieRolling ? '?' : d.v}</div>
+                <div class="die-img" style="background-image: url('${imgPath}')"></div>
+                <div class="die-val">${d.v}</div>
             </div>
             <div class="die-sides">d${d.s}</div>`;
                 
@@ -714,6 +707,25 @@ function drawDice(id, list, owner) {
         };
         container.appendChild(wrapper);
     });
+}
+
+
+function setSpriteFrame(el, frameIndex) {
+    const col = frameIndex % 8;
+    const row = Math.floor(frameIndex / 8);
+    el.style.backgroundPosition = `-${col * 64}px -${row * 64}px`;
+}
+
+// Starts the animation and returns the timer ID
+function startDiceAnimation(dieElement, sides) {
+    dieElement.classList.add('rolling-style');
+    dieElement.style.backgroundImage = `url('polyhedral_dice/d${sides}_sheet.png')`;
+    
+    let frame = 0;
+    return setInterval(() => {
+        frame = (frame + 1) % 48;
+        setSpriteFrame(dieElement, frame);
+    }, 50); // 20 frames per second
 }
 // ── SYNC SELECTION ───────────────────────────────────────────────────────────
 function syncSelection() {
@@ -990,52 +1002,60 @@ function executeCap(logMsg, atkDie, defDie) {
     if(isAnimating) return;
     isAnimating = true;
 
-    // Identify exactly which dice are rolling
-    rollingIndices = mindMode
+    // 1. Identify which specific dice to spin
+    const usedIndices = mindMode
         ? equationItems.filter(e => e.type === 'die').map(e => e.dieIdx)
         : [...selectedOwn];
 
-    render();
+    // 2. Start the animations manually
+    const activeTimers = [];
+    usedIndices.forEach(idx => {
+        const el = document.querySelector(`#die-${myPlayerNum}-${idx} .die-img`);
+        if(el) {
+            const sides = (myPlayerNum === 1 ? p1Dice : p2Dice)[idx].s;
+            activeTimers.push(startDiceAnimation(el, sides));
+        }
+    });
 
+    // 3. Show the "captured" animation on the opponent
     const defSide = myPlayerNum === 1 ? 2 : 1;
     const targetEl = document.getElementById(`die-${defSide}-${selectedOpp}`);
     if(targetEl) targetEl.classList.add('captured');
 
-    // ... rest of your penalty checks ...
-
     setTimeout(() => {
-        setTimeout(() => {
-            const myD = myPlayerNum === 1 ? [...p1Dice] : [...p2Dice];
-            const op = myPlayerNum === 1 ? [...p2Dice] : [...p1Dice];
-            op.splice(selectedOpp, 1);
+        // 4. Stop the timers
+        activeTimers.forEach(id => clearInterval(id));
 
-            if(op.length === 0) {
-                db.ref('rooms/'+currentRoomName).update({ winner:myPlayerNum, log:logMsg });
-                isAnimating = false; rollingIndices = []; return;
-            }
+        const myD = myPlayerNum === 1 ? [...p1Dice] : [...p2Dice];
+        const op = myPlayerNum === 1 ? [...p2Dice] : [...p1Dice];
+        op.splice(selectedOpp, 1);
 
-            rollingIndices.forEach(idx => {
-                myD[idx] = { ...myD[idx], v: Math.floor(Math.random()*myD[idx].s)+1 };
-            });
+        if(op.length === 0) {
+            db.ref('rooms/'+currentRoomName).update({ winner:myPlayerNum, log:logMsg });
+            isAnimating = false; return;
+        }
 
-            const newP1 = myPlayerNum === 1 ? sortDice(myD) : op;
-            const newP2 = myPlayerNum === 2 ? sortDice(myD) : op;
+        // Reroll used dice
+        usedIndices.forEach(idx => {
+            myD[idx] = { ...myD[idx], v: Math.floor(Math.random() * myD[idx].s) + 1 };
+        });
 
-            selectedOwn = []; selectedOpp = null;
-            equationItems = [];
-            rollingIndices = []; // CLEAR indices before final render
+        const newP1 = myPlayerNum === 1 ? sortDice(myD) : op;
+        const newP2 = myPlayerNum === 2 ? sortDice(myD) : op;
 
-            db.ref('rooms/'+currentRoomName).update({
-                p1D: newP1, p2D: newP2,
-                turn: myPlayerNum === 1 ? 2 : 1,
-                p1S: [], p2S: [], p1T: null, p2T: null,
-                log: logMsg, lastCap: null
-            }).then(() => { 
-                isAnimating = false; 
-                render(); 
-            });
-        }, 700);
-    }, 550);
+        selectedOwn = []; selectedOpp = null;
+        equationItems = [];
+
+        db.ref('rooms/'+currentRoomName).update({
+            p1D: newP1, p2D: newP2,
+            turn: myPlayerNum === 1 ? 2 : 1,
+            p1S: [], p2S: [], p1T: null, p2T: null,
+            log: logMsg
+        }).then(() => { 
+            isAnimating = false; 
+            render(); // render() clears the "rolling-style" class and shows high-res
+        });
+    }, 1000); // Animation duration
 }
 
 // ── PASS / SURRENDER ─────────────────────────────────────────────────────────
